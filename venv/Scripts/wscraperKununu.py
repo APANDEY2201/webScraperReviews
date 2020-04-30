@@ -9,6 +9,7 @@ rev_pages=4
 count_final=0
 # Define organizational variables
 # rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+# Jaykishan
 rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 #rev_org_dict={'DeutscheBahn':'deutschebahn'}
 #rev_org_dict={'Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
@@ -107,7 +108,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                 rev_mnth='  '
             #print('rev_mnth:: ', rev_mnth)
             try:
-                rev_heading = indiv_divs.div.h3.text
+                rev_heading = indiv_divs.div.h3.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
                 rev_heading='  '
             #print('rev_heading:: ', rev_heading)
@@ -118,7 +119,7 @@ for org_name, org_url_alias in rev_org_dict.items():
             #print('rev_rating:: ', rev_rating)
             # Employee details
             try:
-                rev_emp_position = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text
+                rev_emp_position = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
                 rev_emp_position='  '
             #print(rev_emp_position)
@@ -128,7 +129,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                 rev_emp_dept_loc='  '
             #print(rev_emp_dept_loc)
             try:
-                rev_emp_recmndatn = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text
+                rev_emp_recmndatn = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
                 rev_emp_recmndatn='  '
             #print('rev_emp_recmndatn :: ', rev_emp_recmndatn)
@@ -165,7 +166,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                     except:
                         rev_work_atmos_score='  '
                     try:
-                        rev_wrk_atmos_comment = rev_class.p.text
+                        rev_wrk_atmos_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
                         rev_wrk_atmos_comment = '  '
                 if (rev_class.h4.text == 'Kollegenzusammenhalt'):
@@ -178,7 +179,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                     except:
                         rev_coll_coh_score='  '
                     try:
-                        rev_coll_coh_comment = rev_class.p.text
+                        rev_coll_coh_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
                         rev_coll_coh_comment = '  '
                 if (rev_class.h4.text == 'Gleichberechtigung'):
@@ -191,7 +192,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                     except:
                         rev_eq_rights_score='  '
                     try:
-                        rev_eq_rights_comment = rev_class.p.text
+                        rev_eq_rights_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
                         rev_eq_rights_comment = '  '
                 if (rev_class.h4.text == 'Umgang mit älteren Kollegen'):
@@ -204,7 +205,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                     except:
                         rev_old_coll_score='  '
                     try:
-                        rev_old_coll_comment = rev_class.p.text
+                        rev_old_coll_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
                         rev_old_coll_comment = '  '
                 if (rev_class.h4.text == 'Umwelt-/Sozialbewusstsein'):
@@ -217,7 +218,7 @@ for org_name, org_url_alias in rev_org_dict.items():
                     except:
                         rev_soc_awareness_score='  '
                     try:
-                        rev_soc_awareness_comment = rev_class.p.text
+                        rev_soc_awareness_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
                         rev_soc_awareness_comment = '  '
 
