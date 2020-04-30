@@ -5,10 +5,11 @@ from bs4 import BeautifulSoup as bsoup
 #print('First Line')
 
 # Step 1: To get the source code of page.
-rev_pages=100000
+rev_pages=4
 count_final=0
 # Define organizational variables
-rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+# rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 #rev_org_dict={'DeutscheBahn':'deutschebahn'}
 #rev_org_dict={'Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 rev_org_domain=''
@@ -28,15 +29,16 @@ rev_filename_csv='kununuRevCsv001.csv'
 rev_filename_dsv='kununuRevDsv001.csv'
 rev_heading_csv="Organization,Month,Heading,OverallRating,WorkingAtmosphereScore,WorkingAtmosphereComment,ColleagueCohesionScore,ColleagueCohesionComment,EqualRightsScore,EqualRightsComment,DealingWithOlderColleaguesScore,DealingWithOlderColleaguesComment,EnvironmentalSocialAwarenessScore,EnvironmentalSocialAwarenessComment\n"
 rev_heading_dsv="Organization|Month|Heading|OverallRating|WorkingAtmosphereScore|WorkingAtmosphereComment|ColleagueCohesionScore|ColleagueCohesionComment|EqualRightsScore|EqualRightsComment|DealingWithOlderColleaguesScore|DealingWithOlderColleaguesComment|EnvironmentalSocialAwarenessScore|EnvironmentalSocialAwarenessComment\n"
-f_csv=open(rev_filename_csv, 'w')
+f_csv=open(rev_filename_csv, 'w',encoding='utf-8')
 f_csv.write(rev_heading_csv)
-f_dsv=open(rev_filename_dsv, 'w')
+f_dsv=open(rev_filename_dsv, 'w',encoding='utf-8')
 f_dsv.write(rev_heading_dsv)
 base_url='https://www.kununu.com/de/'
 komment_url='/kommentare/'
 #base_url='https://www.kununu.com/de/deutschebahn/kommentare/'
 #base_url='https://www.kununu.com/de/infosyslimited/kommentare/'
 for org_name, org_url_alias in rev_org_dict.items():
+    passFlag = False  # Jaykishan
     print('Fetching Reviews of',org_name,',Please wait...')
     url_org_home=base_url+org_url_alias
     page_org_home=urlopen(url_org_home)
@@ -79,7 +81,9 @@ for org_name, org_url_alias in rev_org_dict.items():
         try:
             page_obj = urlopen(target_url)  # Object of HTTPResponse from the url
         except HTTPError:
-            pass  # Check it later for all
+            print("404 Page not found") # Jaykishan
+            passFlag = True  # Check it later for all # Jaykishan
+            break # Jaykishan
         #    print('page_obj:: ',page_obj)
         html_page = page_obj.read()  # Open the HTTPResponse object to get the html source code.
         #    print('html_page:: ',html_page)
@@ -240,4 +244,7 @@ for org_name, org_url_alias in rev_org_dict.items():
 
         count_final = count_div + count_final
     #    print('----Loop Ended with ',count_div,' divs---- \n \n')
+    if passFlag == True: # Jaykishan
+        passFlag = False # Jaykishan
+        pass # Jaykishan
     print('Total Reviews Fetched Until Now :: ', count_final,'\n')
