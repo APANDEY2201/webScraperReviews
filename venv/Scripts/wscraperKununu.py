@@ -1,11 +1,14 @@
 from urllib.request import urlopen
 from urllib.error import HTTPError
 from bs4 import BeautifulSoup as bsoup
+import time
+import csv
+import re
 
 #print('First Line')
 
 # Step 1: To get the source code of page.
-rev_pages=4
+rev_pages=2
 count_final=0
 # Define organizational variables
 # rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
@@ -14,33 +17,44 @@ rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting',
 #rev_org_dict={'DeutscheBahn':'deutschebahn'}
 #rev_org_dict={'Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 rev_org_domain=''
-rev_sales=''
-rev_no_of_emp=''
-rev_kununu_score=''
-rev_count_kun=''
-rev_recmndtn_prcnt=''
-rev_kun_profile_views=''
-rev_org_file_dsv='OrgDTLS.csv'
-org_file_heading="organization | sales | no of employee | kununu score | total reviews in kununu | recommendation percent | profile views\n"
+OrgSales= ''
+OrgNoOfEmployees= ''
+OrgKununuScore= ''
+OrgTotalKununuReviews= ''
+OrgRecomPercent= ''
+OrgProfileViews= ''
+# rev_org_file_dsv='OrgDTLS.csv'
+# org_file_heading="Organization | Sales | NoOfEmployees | KununuScore | TotalKununuReviews | RecomPercent | ProfileViews\n"
 
-org_csv=open(rev_org_file_dsv,'w')
-org_csv.write(org_file_heading)
+# org_csv=open(rev_org_file_dsv,'w',encoding='utf-8')
+# org_csv.write(org_file_heading)
 
-rev_filename_csv='kununuRevCsv001.csv'
-rev_filename_dsv='kununuRevDsv001.csv'
-rev_heading_csv="Organization,Month,Heading,OverallRating,WorkingAtmosphereScore,WorkingAtmosphereComment,ColleagueCohesionScore,ColleagueCohesionComment,EqualRightsScore,EqualRightsComment,DealingWithOlderColleaguesScore,DealingWithOlderColleaguesComment,EnvironmentalSocialAwarenessScore,EnvironmentalSocialAwarenessComment\n"
-rev_heading_dsv="Organization|Month|Heading|OverallRating|WorkingAtmosphereScore|WorkingAtmosphereComment|ColleagueCohesionScore|ColleagueCohesionComment|EqualRightsScore|EqualRightsComment|DealingWithOlderColleaguesScore|DealingWithOlderColleaguesComment|EnvironmentalSocialAwarenessScore|EnvironmentalSocialAwarenessComment\n"
-f_csv=open(rev_filename_csv, 'w',encoding='utf-8')
-f_csv.write(rev_heading_csv)
-f_dsv=open(rev_filename_dsv, 'w',encoding='utf-8')
-f_dsv.write(rev_heading_dsv)
+# rev_filename_csv='kununuRevCsv001.csv'
+# rev_filename_dsv='kununuRevDsv001.csv'
+masterDataFileName = 'Master_Data_Milestone1.csv'
+
+# rev_heading_csv="Organization,MonthYear,OverallScore,OverallComment,WorkingAtmosphereScore,WorkingAtmosphereComment,ColleagueCohesionScore,ColleagueCohesionComment,EqualRightsScore,EqualRightsComment,DealingWithOlderColleaguesScore,DealingWithOlderColleaguesComment,EnvironmentalSocialAwarenessScore,EnvironmentalSocialAwarenessComment\n"
+# rev_heading_dsv="Organization,MonthYear|OverallScore|OverallComment|WorkingAtmosphereScore|WorkingAtmosphereComment|ColleagueCohesionScore|ColleagueCohesionComment|EqualRightsScore|EqualRightsComment|DealingWithOlderColleaguesScore|DealingWithOlderColleaguesComment|EnvironmentalSocialAwarenessScore|EnvironmentalSocialAwarenessComment\n"
+
+masterDataFile = open(masterDataFileName, "w", newline='',encoding='utf-8')
+csv_out = csv.writer(masterDataFile, delimiter = '|')
+csv_out.writerows([("Org","OrgSales","OrgNoOfEmployees","OrgKununuScore","OrgTotalKununuReviews","OrgRecomPercent","OrgProfileViews","OrgBenefits","RverMonthYear","RverReviewer","RverPosition","RverLoc","RverRecom","RvReviewAbout","RvScore","RvComment")])
+
+# rev_heading_csv = "Org,OrgSales,OrgNoOfEmployees,OrgKununuScore,OrgTotalKununuReviews,OrgRecomPercent,OrgProfileViews,OrgBenefits,RverMonthYear,RverReviewer,RverPosition,RverLoc,RverRecom,RvReviewAbout,RvScore,RvComment" + "\n"
+# rev_heading_dsv = "Org|OrgSales|OrgNoOfEmployees|OrgKununuScore|OrgTotalKununuReviews|OrgRecomPercent|OrgProfileViews|OrgBenefits|RverMonthYear|RverReviewer|RverPosition|RverLoc|RverRecom|RvReviewAbout|RvScore|RvComment" + "\n"
+# f_csv=open(rev_filename_csv, 'w',encoding='utf-8')
+# f_csv.write(rev_heading_csv)
+# f_dsv=open(rev_filename_dsv, 'w',encoding='utf-8')
+# f_dsv.write(rev_heading_dsv)
+
 base_url='https://www.kununu.com/de/'
 komment_url='/kommentare/'
 #base_url='https://www.kununu.com/de/deutschebahn/kommentare/'
 #base_url='https://www.kununu.com/de/infosyslimited/kommentare/'
-for org_name, org_url_alias in rev_org_dict.items():
+for Org, org_url_alias in rev_org_dict.items():
+    time.sleep(0.5)
     passFlag = False  # Jaykishan
-    print('Fetching Reviews of',org_name,',Please wait...')
+    print('Fetching Reviews of', Org, ',Please wait...')
     url_org_home=base_url+org_url_alias
     page_org_home=urlopen(url_org_home)
     html_org_home=page_org_home.read()
@@ -49,33 +63,42 @@ for org_name, org_url_alias in rev_org_dict.items():
 #    rev_org_domain=parsed_html_org.find("div",{"class":"company-profile-sub-title"}).a.text # Domain
     key_fig_div=parsed_html_org.find_all("div",{"class":"col-xs-7 col-sm-12 col-md-12 col-lg-12 company-profile-number-data"})
     try:
-        rev_sales=key_fig_div[0].text.strip()
+        OrgSales=key_fig_div[0].text.strip()
     except:
-        rev_sales='  '
+        OrgSales= '  '
     try:
-        rev_no_of_emp=key_fig_div[1].text.strip()
+        OrgNoOfEmployees=key_fig_div[1].text.strip()
     except:
-        rev_no_of_emp='  '
+        OrgNoOfEmployees= '  '
     kununu_dtls=parsed_html_org.find("div",{"class":"col-sm-5 col-md-7 overview-main"}).div
     try:
-        rev_kununu_score=kununu_dtls.div.span.text.strip()
+        OrgKununuScore=kununu_dtls.div.span.text.strip()
     except:
-        rev_kununu_score='  '
+        OrgKununuScore= '  '
     try:
-        rev_recmndtn_prcnt=kununu_dtls.find("div",{"class":"col-xs-6 col-sm-6 col-md-3 col-lg-3 relative"}).a.span.text.strip()
+        OrgRecomPercent=kununu_dtls.find("div", {"class": "col-xs-6 col-sm-6 col-md-3 col-lg-3 relative"}).a.span.text.strip()
     except:
-        rev_recmndtn_prcnt='  '
+        OrgRecomPercent= '  '
     try:
-        rev_kun_profile_views=kununu_dtls.find("div",{"class":"col-md-2 col-lg-2 hidden-sm hidden-xs relative"}).a.span.text.strip()
+        OrgProfileViews=kununu_dtls.find("div", {"class": "col-md-2 col-lg-2 hidden-sm hidden-xs relative"}).a.span.text.strip()
     except:
-        rev_kun_profile_views='  '
+        OrgProfileViews= '  '
     try:
-        rev_count_kun=parsed_html_org.find_all("div",{"class":"base-comparison"})[0].text.strip() # Total reviews in kununu
+        OrgTotalKununuReviews=parsed_html_org.find_all("div", {"class": "base-comparison"})[0].text.strip() # Total reviews in kununu
     except:
-        rev_count_kun='  '
-    org_csv.write(org_name+'|'+rev_sales+'|'+rev_no_of_emp+'|'+rev_kununu_score+'|'+rev_count_kun+'|'+rev_recmndtn_prcnt+'|'+rev_kun_profile_views+'\n')
+        OrgTotalKununuReviews= '  '
+    try:
+        OrgBenefits = ''
+        regex = re.compile('.*cp-tile company-profile-benefits.*')
+        size = len(parsed_html_org.find_all("div", {"class": regex})[0].div.find_all("benefit"))
+        for p in range(size):
+            OrgBenefits = OrgBenefits + " (" + str(p+1) + ") " + re.sub(' +', ' ',parsed_html_org.find_all("div", {"class": regex})[0].div.find_all("benefit")[p].text.strip())
+    except:
+        OrgBenefits= '  '
+    # org_csv.write(Org + '|' + OrgSales + '|' + OrgNoOfEmployees + '|' + OrgKununuScore + '|' + OrgTotalKununuReviews + '|' + OrgRecomPercent + '|' + OrgProfileViews + '\n')
 
     for page in range(1, rev_pages):
+        time.sleep(0.5)
         target_url = base_url +org_url_alias+komment_url+str(page)
         #    target_url='https://www.kununu.com/de/deutschebahn/kommentare/1'
         #    print('Base url is: '+target_url)
@@ -99,58 +122,59 @@ for org_name, org_url_alias in rev_org_dict.items():
         count_div = 0
         #    print('----Loop Starts----')
         #    print('\n *************************************************** \n')
+        userCounter = 1
         for indiv_divs in all_divs:
             count_div += 1
             #    print(indiv_divs)
             try:
-                rev_mnth = indiv_divs.div.span.time.text  # extracted datetime from the time tag
+                RverMonthYear = indiv_divs.div.span.time.text  # extracted datetime from the time tag
             except:
-                rev_mnth='  '
+                RverMonthYear= '  '
             #print('rev_mnth:: ', rev_mnth)
             try:
-                rev_heading = indiv_divs.div.h3.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RvComment1 = indiv_divs.div.h3.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
-                rev_heading='  '
+                RvComment1= '  '
             #print('rev_heading:: ', rev_heading)
             try:
-                rev_rating = indiv_divs.find("div", {"class": "index__block__36tsj index__scoreBlock__138n3"}).span.text
+                RvScore1 = indiv_divs.find("div", {"class": "index__block__36tsj index__scoreBlock__138n3"}).span.text
             except:
-                rev_rating='  '
+                RvScore1= '  '
             #print('rev_rating:: ', rev_rating)
             # Employee details
             try:
-                rev_emp_position = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RverPosition = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
-                rev_emp_position='  '
+                RverPosition= '  '
             #print(rev_emp_position)
             try:
-                rev_emp_dept_loc = indiv_divs.find("span", {"class": "index__sentence__3PKUg index__middot__3vlu3"}).text  # Emp department with location
+                RverLoc = indiv_divs.find("span", {"class": "index__sentence__3PKUg index__middot__3vlu3"}).text  # Emp department with location
             except:
-                rev_emp_dept_loc='  '
+                RverLoc= '  '
             #print(rev_emp_dept_loc)
             try:
-                rev_emp_recmndatn = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RverRecom = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
             except:
-                rev_emp_recmndatn='  '
+                RverRecom= '  '
             #print('rev_emp_recmndatn :: ', rev_emp_recmndatn)
 
             # defining all variables
             # Ratings
-            rev_wrk_atmos = ''
-            rev_work_atmos_score = ''
-            rev_wrk_atmos_comment = ''
-            rev_coll_coh = ''
-            rev_coll_coh_score = ''
-            rev_coll_coh_comment = ''
-            rev_eq_rights = ''
-            rev_eq_rights_score = ''
-            rev_eq_rights_comment = ''
-            rev_old_coll = ''
-            rev_old_coll_score = ''
-            rev_old_coll_comment = ''
-            rev_soc_awareness = ''
-            rev_soc_awareness_score = ''
-            rev_soc_awareness_comment = ''
+            RvReviewAbout2 = ''
+            RvScore2 = ''
+            RvComment2 = ''
+            RvReviewAbout3 = ''
+            RvScore3 = ''
+            RvComment3 = ''
+            RvReviewAbout4 = ''
+            RvScore4 = ''
+            RvComment4 = ''
+            RvReviewAbout5 = ''
+            RvScore5 = ''
+            RvComment5 = ''
+            RvReviewAbout6 = ''
+            RvScore6 = ''
+            RvComment6 = ''
 
             #    list_diversity=['Arbeitsatmosphäre','Kollegenzusammenhalt','Gleichberechtigung','Umgang mit älteren Kollegen','Umwelt-/Sozialbewusstsein']
             rev_internalAttributes = indiv_divs.find_all("div", {"class": "index__factor__3Z15R"})
@@ -158,69 +182,69 @@ for org_name, org_url_alias in rev_org_dict.items():
                 #        print('rev_class', rev_class)
                 if (rev_class.h4.text == 'Arbeitsatmosphäre'):
                     try:
-                        rev_wrk_atmos = rev_class.h4.text
+                        RvReviewAbout2 = rev_class.h4.text
                     except:
-                        rev_wrk_atmos= '  '
+                        RvReviewAbout2= '  '
                     try:
-                        rev_work_atmos_score = rev_class.span["data-score"]
+                        RvScore2 = rev_class.span["data-score"]
                     except:
-                        rev_work_atmos_score='  '
+                        RvScore2= '  '
                     try:
-                        rev_wrk_atmos_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment2 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
-                        rev_wrk_atmos_comment = '  '
+                        RvComment2 = '  '
                 if (rev_class.h4.text == 'Kollegenzusammenhalt'):
                     try:
-                        rev_coll_coh = rev_class.h4.text
+                        RvReviewAbout3 = rev_class.h4.text
                     except:
-                        rev_coll_coh='  '
+                        RvReviewAbout3= '  '
                     try:
-                        rev_coll_coh_score = rev_class.span["data-score"]
+                        RvScore3 = rev_class.span["data-score"]
                     except:
-                        rev_coll_coh_score='  '
+                        RvScore3= '  '
                     try:
-                        rev_coll_coh_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment3 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
-                        rev_coll_coh_comment = '  '
+                        RvComment3 = '  '
                 if (rev_class.h4.text == 'Gleichberechtigung'):
                     try:
-                        rev_eq_rights = rev_class.h4.text
+                        RvReviewAbout4 = rev_class.h4.text
                     except:
-                        rev_eq_rights='  '
+                        RvReviewAbout4= '  '
                     try:
-                        rev_eq_rights_score = rev_class.span["data-score"]
+                        RvScore4 = rev_class.span["data-score"]
                     except:
-                        rev_eq_rights_score='  '
+                        RvScore4= '  '
                     try:
-                        rev_eq_rights_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment4 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
-                        rev_eq_rights_comment = '  '
+                        RvComment4 = '  '
                 if (rev_class.h4.text == 'Umgang mit älteren Kollegen'):
                     try:
-                        rev_old_coll = rev_class.h4.text
+                        RvReviewAbout5 = rev_class.h4.text
                     except:
-                        rev_old_coll='  '
+                        RvReviewAbout5= '  '
                     try:
-                        rev_old_coll_score = rev_class.span["data-score"]
+                        RvScore5 = rev_class.span["data-score"]
                     except:
-                        rev_old_coll_score='  '
+                        RvScore5= '  '
                     try:
-                        rev_old_coll_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment5 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
-                        rev_old_coll_comment = '  '
+                        RvComment5 = '  '
                 if (rev_class.h4.text == 'Umwelt-/Sozialbewusstsein'):
                     try:
-                        rev_soc_awareness = rev_class.h4.text
+                        RvReviewAbout6 = rev_class.h4.text
                     except:
-                        rev_soc_awareness='  '
+                        RvReviewAbout6= '  '
                     try:
-                        rev_soc_awareness_score = rev_class.span["data-score"]
+                        RvScore6 = rev_class.span["data-score"]
                     except:
-                        rev_soc_awareness_score='  '
+                        RvScore6= '  '
                     try:
-                        rev_soc_awareness_comment = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment6 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
                     except:
-                        rev_soc_awareness_comment = '  '
+                        RvComment6 = '  '
 
             #    print('rev_internalAttributes:: ',rev_internalAttributes)
             #     print('rev_wrk_atmos:: ', rev_wrk_atmos)
@@ -239,8 +263,48 @@ for org_name, org_url_alias in rev_org_dict.items():
             #     print('rev_soc_awareness_score:: ', rev_soc_awareness_score)
             #     print('rev_soc_awareness_comment:: ', rev_soc_awareness_comment)
 
-            f_csv.write(org_name + "," + rev_mnth + "," + rev_heading + "," + rev_rating + "," + rev_work_atmos_score + "," + rev_wrk_atmos_comment + "," + rev_coll_coh_score + "," + rev_coll_coh_comment + "," + rev_eq_rights_score + "," + rev_eq_rights_comment + "," + rev_old_coll_score + "," + rev_old_coll_comment + "," + rev_soc_awareness_score + "," + rev_soc_awareness_comment + "\n")
-            f_dsv.write(org_name + "|" + rev_mnth + "|" + rev_heading + "|" + rev_rating + "|" + rev_work_atmos_score + "|" + rev_wrk_atmos_comment + "|" + rev_coll_coh_score + "|" + rev_coll_coh_comment + "|" + rev_eq_rights_score + "|" + rev_eq_rights_comment + "|" + rev_old_coll_score + "|" + rev_old_coll_comment + "|" + rev_soc_awareness_score + "|" + rev_soc_awareness_comment + "\n")
+            f_csv_list = []
+
+            f_csv_list.append((Org,OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, "Overall", RvScore1, RvComment1))
+            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, RvReviewAbout2, RvScore2, RvComment2))
+            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, RvReviewAbout3, RvScore3, RvComment3))
+            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, RvReviewAbout4, RvScore4, RvComment4))
+            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, RvReviewAbout5, RvScore5, RvComment5))
+            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+                                    RverPosition, RverLoc, RverRecom, RvReviewAbout6, RvScore6, RvComment6))
+
+            userCounter = userCounter + 1
+
+            csv_out.writerows(f_csv_list)
+
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + "Overall" + "," + RvScore1 + "," + RvComment1 + "\n")
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout2 + "," + RvScore2 + "," + RvComment2 + "\n")
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout3 + "," + RvScore3 + "," + RvComment3 + "\n")
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout4 + "," + RvScore4 + "," + RvComment4 + "\n")
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout5 + "," + RvScore5 + "," + RvComment5 + "\n")
+            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout6 + "," + RvScore6 + "," + RvComment6 + "\n")
+            #
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + "Overall" + "|" + RvScore1 + "|" + RvComment1 + "\n")
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout2 + "|" + RvScore2 + "|" + RvComment2 + "\n")
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout3 + "|" + RvScore3 + "|" + RvComment3 + "\n")
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout4 + "|" + RvScore4 + "|" + RvComment4 + "\n")
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout5 + "|" + RvScore5 + "|" + RvComment5 + "\n")
+            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout6 + "|" + RvScore6 + "|" + RvComment6 + "\n")
+
+            # f_csv.write(Org + "," + RverMonthYear + "," + RvComment1 + "," + RvScore1 + "," + RvScore2 + "," + RvComment2 + "," + RvScore3 + "," + RvComment3 + "," + RvScore4 + "," + RvComment4 + "," + RvScore5 + "," + RvComment5 + "," + RvScore6 + "," + RvComment6 + "\n")
+            # f_dsv.write(Org + "|" + RverMonthYear + "|" + RvComment1 + "|" + RvScore1 + "|" + RvScore2 + "|" + RvComment2 + "|" + RvScore3 + "|" + RvComment3 + "|" + RvScore4 + "|" + RvComment4 + "|" + RvScore5 + "|" + RvComment5 + "|" + RvScore6 + "|" + RvComment6 + "\n")
+
         #       print('\n ***************************************************')
 
         count_final = count_div + count_final
