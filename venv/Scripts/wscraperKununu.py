@@ -31,19 +31,33 @@ def germanMonthsToEnglish(gMonth):
     if gMonth.lower() == 'dezember':
         return 'December'
 
-
-#print('First Line')
+def orgSector(org):
+    if org.lower() == 'adidas ag':
+        return 'Handel'
+    if org.lower() == 'allianz se':
+        return 'Finanz'
+    if org.lower() == 'basf se':
+        return 'Chemie'
+    if org.lower() == 'bayerische motoren werke ag':
+        return 'Automobil'
+    if org.lower() == 'beiersdorf aktiengesellschaft':
+        return 'Handel'
+    if org.lower() == 'deutsche bank ag':
+        return 'Banken'
+    if org.lower() == 'deutsche lufthansa ag':
+        return 'Transport/Verkehr/Logistik'
+    if org.lower() == 'deutsche post ag':
+        return 'Transport/Verkehr/Logistik'
+    if org.lower() == 'sap se':
+        return 'IT'
+    if org.lower() == 'wirecard ag':
+        return 'Finanz'
 
 # Step 1: To get the source code of page.
 rev_pages=500
 count_final=0
-# Define organizational variables
-# rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
-# Jaykishan
-# rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+
 rev_org_dict={'adidas ag':'adidas','Allianz SE':'allianz-deutschland','BASF SE':'basf-se','Bayerische Motoren Werke AG':'bayerische-motoren-werke','Beiersdorf Aktiengesellschaft':'beiersdorf','Deutsche Bank AG':'deutsche-bank','Deutsche Lufthansa AG':'deutsche-lufthansa','Deutsche Post AG':'deusche-post','SAP SE':'sap','Wirecard AG':'wirecard'}
-#rev_org_dict={'DeutscheBahn':'deutschebahn'}
-#rev_org_dict={'Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 rev_org_domain=''
 OrgSales= ''
 OrgNoOfEmployees= ''
@@ -51,38 +65,27 @@ OrgKununuScore= ''
 OrgTotalKununuReviews= ''
 OrgRecomPercent= ''
 OrgProfileViews= ''
-# rev_org_file_dsv='OrgDTLS.csv'
-# org_file_heading="Organization | Sales | NoOfEmployees | KununuScore | TotalKununuReviews | RecomPercent | ProfileViews\n"
 
-# org_csv=open(rev_org_file_dsv,'w',encoding='utf-8')
-# org_csv.write(org_file_heading)
-
-# rev_filename_csv='kununuRevCsv001.csv'
-# rev_filename_dsv='kununuRevDsv001.csv'
 masterDataFileName = 'Master_Data_Milestone1.csv'
-
-# rev_heading_csv="Organization,MonthYear,OverallScore,OverallComment,WorkingAtmosphereScore,WorkingAtmosphereComment,ColleagueCohesionScore,ColleagueCohesionComment,EqualRightsScore,EqualRightsComment,DealingWithOlderColleaguesScore,DealingWithOlderColleaguesComment,EnvironmentalSocialAwarenessScore,EnvironmentalSocialAwarenessComment\n"
-# rev_heading_dsv="Organization,MonthYear|OverallScore|OverallComment|WorkingAtmosphereScore|WorkingAtmosphereComment|ColleagueCohesionScore|ColleagueCohesionComment|EqualRightsScore|EqualRightsComment|DealingWithOlderColleaguesScore|DealingWithOlderColleaguesComment|EnvironmentalSocialAwarenessScore|EnvironmentalSocialAwarenessComment\n"
-
 masterDataFile = open(masterDataFileName, "w", newline='',encoding='utf-8')
 csv_out = csv.writer(masterDataFile, delimiter = '|')
-csv_out.writerows([("Org","OrgSales","OrgNoOfEmployees","OrgKununuScore","OrgTotalKununuReviews","OrgRecomPercent","OrgProfileViews","OrgBenefits","RverMonthYear","RverReviewer","RverPosition","RverLoc","RverRecom","RvReviewAbout","RvScore","RvComment")])
+csv_out.writerows([("Org","OrgSector","RverMonthYear","RverReviewer","RverPosition","RverLoc","RverRecom","RvReviewAbout","RvScore","RvComment")])
 
-# rev_heading_csv = "Org,OrgSales,OrgNoOfEmployees,OrgKununuScore,OrgTotalKununuReviews,OrgRecomPercent,OrgProfileViews,OrgBenefits,RverMonthYear,RverReviewer,RverPosition,RverLoc,RverRecom,RvReviewAbout,RvScore,RvComment" + "\n"
-# rev_heading_dsv = "Org|OrgSales|OrgNoOfEmployees|OrgKununuScore|OrgTotalKununuReviews|OrgRecomPercent|OrgProfileViews|OrgBenefits|RverMonthYear|RverReviewer|RverPosition|RverLoc|RverRecom|RvReviewAbout|RvScore|RvComment" + "\n"
-# f_csv=open(rev_filename_csv, 'w',encoding='utf-8')
-# f_csv.write(rev_heading_csv)
-# f_dsv=open(rev_filename_dsv, 'w',encoding='utf-8')
-# f_dsv.write(rev_heading_dsv)
+orgDataFileName = 'Orgs_Data_Milestone1.csv'
+orgDatafile = open(orgDataFileName, "w", newline='',encoding='utf-8')
+csv_out = csv.writer(orgDatafile, delimiter = '|')
+csv_out.writerows([("Org","OrgSector","OrgSales","OrgNoOfEmployees","OrgKununuScore","OrgTotalKununuReviews","OrgRecomPercent","OrgProfileViews","OrgBenefits")])
 
 base_url='https://www.kununu.com/de/'
 komment_url='/kommentare/'
 #base_url='https://www.kununu.com/de/deutschebahn/kommentare/'
 #base_url='https://www.kununu.com/de/infosyslimited/kommentare/'
+
 for Org, org_url_alias in rev_org_dict.items():
     time.sleep(0.5)
     passFlag = False  # Jaykishan
     print('Fetching Reviews of', Org, ',Please wait...')
+    OrgSector = orgSector(Org)
     url_org_home=base_url+org_url_alias
     page_org_home=urlopen(url_org_home)
     html_org_home=page_org_home.read()
@@ -177,7 +180,12 @@ for Org, org_url_alias in rev_org_dict.items():
             OrgBenefits = OrgBenefits + " (" + str(p+1) + ") " + re.sub(' +', ' ',parsed_html_org.find_all("div", {"class": regex})[0].div.find_all("benefit")[p].text.strip())
     except:
         OrgBenefits= '  '
-    # org_csv.write(Org + '|' + OrgSales + '|' + OrgNoOfEmployees + '|' + OrgKununuScore + '|' + OrgTotalKununuReviews + '|' + OrgRecomPercent + '|' + OrgProfileViews + '\n')
+
+    f_csv_list_org = []
+    f_csv_list_org.append((Org, OrgSector, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
+                       OrgRecomPercent, OrgProfileViews, OrgBenefits))
+    csv_out = csv.writer(orgDatafile, delimiter='|')
+    csv_out.writerows(f_csv_list_org)
 
     for page in range(1, rev_pages):
         time.sleep(0.5)
@@ -347,29 +355,22 @@ for Org, org_url_alias in rev_org_dict.items():
             #     print('rev_soc_awareness_comment:: ', rev_soc_awareness_comment)
 
             f_csv_list = []
-
-            f_csv_list.append((Org,OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, "Overall", RvScore1, RvComment1))
-            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout2, RvScore2, RvComment2))
-            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout3, RvScore3, RvComment3))
-            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout4, RvScore4, RvComment4))
-            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout5, RvScore5, RvComment5))
-            f_csv_list.append((Org, OrgSales, OrgNoOfEmployees, OrgKununuScore, OrgTotalKununuReviews,
-                                    OrgRecomPercent, OrgProfileViews, OrgBenefits, RverMonthYear, str(userCounter),
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout6, RvScore6, RvComment6))
-
             userCounter = userCounter + 1
-
+            csv_out = csv.writer(masterDataFile, delimiter='|')
             csv_out.writerows(f_csv_list)
+
 
             # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + "Overall" + "," + RvScore1 + "," + RvComment1 + "\n")
             # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout2 + "," + RvScore2 + "," + RvComment2 + "\n")
