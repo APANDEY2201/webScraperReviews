@@ -5,15 +5,43 @@ import time
 import csv
 import re
 
+def germanMonthsToEnglish(gMonth):
+    if gMonth.lower() == 'januar':
+        return 'January'
+    if gMonth.lower() == 'februar':
+        return 'February'
+    if gMonth.lower() == 'märz':
+        return 'March'
+    if gMonth.lower() == 'april':
+        return 'April'
+    if gMonth.lower() == 'mai':
+        return 'May'
+    if gMonth.lower() == 'juni':
+        return 'June'
+    if gMonth.lower() == 'juli':
+        return 'July'
+    if gMonth.lower() == 'august':
+        return 'August'
+    if gMonth.lower() == 'september':
+        return 'September'
+    if gMonth.lower() == 'oktober':
+        return 'October'
+    if gMonth.lower() == 'november':
+        return 'November'
+    if gMonth.lower() == 'dezember':
+        return 'December'
+
+
 #print('First Line')
 
 # Step 1: To get the source code of page.
-rev_pages=2
+rev_pages=500
 count_final=0
 # Define organizational variables
 # rev_org_dict={'DeutscheBahn':'deutschebahn','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 # Jaykishan
-rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+# rev_org_dict={'ICO_LUX':'ico-lux','volkswagenconsulting':'volkswagenconsulting','IBM':'ibm-deutschland','Infosys':'infosyslimited','Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
+rev_org_dict={'adidas ag':'adidas','Allianz SE':'allianz-deutschland','BASF SE':'basf-se','Bayerische Motoren Werke AG':'bayerische-motoren-werke','Beiersdorf Aktiengesellschaft':'beiersdorf','Deutsche Bank AG':'deutsche-bank','Deutsche Lufthansa AG':'deutsche-lufthansa','Deutsche Post AG':'deusche-post','SAP SE':'sap','Wirecard AG':'wirecard'}
 #rev_org_dict={'DeutscheBahn':'deutschebahn'}
 #rev_org_dict={'Tata Consultancy Services':'tata-consultancy-services-deutschland','volkswagenconsulting':'volkswagenconsulting'}
 rev_org_domain=''
@@ -62,29 +90,83 @@ for Org, org_url_alias in rev_org_dict.items():
     parsed_html_org=bsoup(html_org_home,"html.parser")
 #    rev_org_domain=parsed_html_org.find("div",{"class":"company-profile-sub-title"}).a.text # Domain
     key_fig_div=parsed_html_org.find_all("div",{"class":"col-xs-7 col-sm-12 col-md-12 col-lg-12 company-profile-number-data"})
-    try:
-        OrgSales=key_fig_div[0].text.strip()
+
+    try: # OrgSales
+        OrgSalesTemp = key_fig_div[0].text.strip().split(' ')
+        num = ''
+        unit = ''
+        currency = ''
+        for t in OrgSalesTemp:
+            if t[0].isnumeric():
+                num = t
+            if "mio" in t.lower():
+                unit = 'million'
+            if "mrd" in t.lower():
+                unit = 'billion'
+            if "usd" in t.lower():
+                currency = 'usd'
+            if "eur" in t.lower():
+                currency = 'eur'
+        newnum = ''
+        for t in range(len(num)):
+            if num[t] == '.':
+                newnum = newnum + ''
+            elif num[t] == ',':
+                newnum = newnum + '.'
+            else:
+                newnum = newnum + num[t]
+        finalVal = 0
+        if unit == 'million':
+            finalVal = float(newnum) / 1000
+            if currency == 'usd':
+                finalVal = finalVal * 0.9
+        if unit == 'billion':
+            finalVal = float(newnum)
+            if currency == 'usd':
+                finalVal = finalVal * 0.9
+        OrgSales=str(str(finalVal))
     except:
         OrgSales= '  '
-    try:
-        OrgNoOfEmployees=key_fig_div[1].text.strip()
+
+    try: # OrgNoOfEmployees
+        OrgNoOfEmployeesTemp=key_fig_div[1].text.strip().split(' ')
+        num = []
+        for t in OrgNoOfEmployeesTemp:
+            if t[0].isnumeric():
+                num.append(t)
+        newnum = []
+        for a in num:
+            newnumTemp = ''
+            for t in range(len(a)):
+                if a[t] == '.':
+                    newnumTemp = newnumTemp + ''
+                elif a[t] == ',':
+                    newnumTemp = newnumTemp + '.'
+                else:
+                    newnumTemp = newnumTemp + a[t]
+            newnum.append(newnumTemp)
+        finalVal = 0
+        for a in newnum:
+            finalVal = finalVal + int(a)
+
+        OrgNoOfEmployees=str(finalVal)
     except:
         OrgNoOfEmployees= '  '
     kununu_dtls=parsed_html_org.find("div",{"class":"col-sm-5 col-md-7 overview-main"}).div
     try:
-        OrgKununuScore=kununu_dtls.div.span.text.strip()
+        OrgKununuScore=kununu_dtls.div.span.text.strip().replace('.', '').replace(',', '.')
     except:
         OrgKununuScore= '  '
     try:
-        OrgRecomPercent=kununu_dtls.find("div", {"class": "col-xs-6 col-sm-6 col-md-3 col-lg-3 relative"}).a.span.text.strip()
+        OrgRecomPercent=kununu_dtls.find("div", {"class": "col-xs-6 col-sm-6 col-md-3 col-lg-3 relative"}).a.span.text.strip().replace('%','').replace('.', '').replace(',', '.')
     except:
         OrgRecomPercent= '  '
     try:
-        OrgProfileViews=kununu_dtls.find("div", {"class": "col-md-2 col-lg-2 hidden-sm hidden-xs relative"}).a.span.text.strip()
+        OrgProfileViews=kununu_dtls.find("div", {"class": "col-md-2 col-lg-2 hidden-sm hidden-xs relative"}).a.span.text.strip().replace('.', '').replace(',', '.')
     except:
         OrgProfileViews= '  '
     try:
-        OrgTotalKununuReviews=parsed_html_org.find_all("div", {"class": "base-comparison"})[0].text.strip() # Total reviews in kununu
+        OrgTotalKununuReviews=parsed_html_org.find_all("div", {"class": "base-comparison"})[0].text.strip().split(' ')[0].replace('.', '').replace(',', '.') # Total reviews in kununu
     except:
         OrgTotalKununuReviews= '  '
     try:
@@ -127,7 +209,8 @@ for Org, org_url_alias in rev_org_dict.items():
             count_div += 1
             #    print(indiv_divs)
             try:
-                RverMonthYear = indiv_divs.div.span.time.text  # extracted datetime from the time tag
+                engMonth = germanMonthsToEnglish(indiv_divs.div.span.time.text.split(' ')[0])
+                RverMonthYear = engMonth + " " + indiv_divs.div.span.time.text.split(' ')[1]  # extracted datetime from the time tag
             except:
                 RverMonthYear= '  '
             #print('rev_mnth:: ', rev_mnth)
@@ -137,7 +220,7 @@ for Org, org_url_alias in rev_org_dict.items():
                 RvComment1= '  '
             #print('rev_heading:: ', rev_heading)
             try:
-                RvScore1 = indiv_divs.find("div", {"class": "index__block__36tsj index__scoreBlock__138n3"}).span.text
+                RvScore1 = indiv_divs.find("div", {"class": "index__block__36tsj index__scoreBlock__138n3"}).span.text.replace('.', '').replace(',', '.')
             except:
                 RvScore1= '  '
             #print('rev_rating:: ', rev_rating)
@@ -186,7 +269,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvReviewAbout2= '  '
                     try:
-                        RvScore2 = rev_class.span["data-score"]
+                        RvScore2 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
                     except:
                         RvScore2= '  '
                     try:
@@ -199,7 +282,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvReviewAbout3= '  '
                     try:
-                        RvScore3 = rev_class.span["data-score"]
+                        RvScore3 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
                     except:
                         RvScore3= '  '
                     try:
@@ -212,7 +295,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvReviewAbout4= '  '
                     try:
-                        RvScore4 = rev_class.span["data-score"]
+                        RvScore4 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
                     except:
                         RvScore4= '  '
                     try:
@@ -225,7 +308,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvReviewAbout5= '  '
                     try:
-                        RvScore5 = rev_class.span["data-score"]
+                        RvScore5 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
                     except:
                         RvScore5= '  '
                     try:
@@ -238,7 +321,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvReviewAbout6= '  '
                     try:
-                        RvScore6 = rev_class.span["data-score"]
+                        RvScore6 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
                     except:
                         RvScore6= '  '
                     try:
