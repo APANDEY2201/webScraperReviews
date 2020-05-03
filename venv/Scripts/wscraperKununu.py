@@ -371,26 +371,6 @@ for Org, org_url_alias in rev_org_dict.items():
             csv_out = csv.writer(masterDataFile, delimiter='|')
             csv_out.writerows(f_csv_list)
 
-
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + "Overall" + "," + RvScore1 + "," + RvComment1 + "\n")
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout2 + "," + RvScore2 + "," + RvComment2 + "\n")
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout3 + "," + RvScore3 + "," + RvComment3 + "\n")
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout4 + "," + RvScore4 + "," + RvComment4 + "\n")
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout5 + "," + RvScore5 + "," + RvComment5 + "\n")
-            # f_csv.write(Org + "," + OrgSales + "," + OrgNoOfEmployees + "," + OrgKununuScore + "," + OrgTotalKununuReviews + "," + OrgRecomPercent + "," + OrgProfileViews + "," + OrgBenefits + "," + RverMonthYear + "," + str(userCounter) + "," + RverPosition + "," + RverLoc + "," + RverRecom + "," + RvReviewAbout6 + "," + RvScore6 + "," + RvComment6 + "\n")
-            #
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + "Overall" + "|" + RvScore1 + "|" + RvComment1 + "\n")
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout2 + "|" + RvScore2 + "|" + RvComment2 + "\n")
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout3 + "|" + RvScore3 + "|" + RvComment3 + "\n")
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout4 + "|" + RvScore4 + "|" + RvComment4 + "\n")
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout5 + "|" + RvScore5 + "|" + RvComment5 + "\n")
-            # f_dsv.write(Org + "|" + OrgSales + "|" + OrgNoOfEmployees + "|" + OrgKununuScore + "|" + OrgTotalKununuReviews + "|" + OrgRecomPercent + "|" + OrgProfileViews + "|" + OrgBenefits + "|" + RverMonthYear + "|" + str(userCounter) + "|" + RverPosition + "|" + RverLoc + "|" + RverRecom + "|" + RvReviewAbout6 + "|" + RvScore6 + "|" + RvComment6 + "\n")
-
-            # f_csv.write(Org + "," + RverMonthYear + "," + RvComment1 + "," + RvScore1 + "," + RvScore2 + "," + RvComment2 + "," + RvScore3 + "," + RvComment3 + "," + RvScore4 + "," + RvComment4 + "," + RvScore5 + "," + RvComment5 + "," + RvScore6 + "," + RvComment6 + "\n")
-            # f_dsv.write(Org + "|" + RverMonthYear + "|" + RvComment1 + "|" + RvScore1 + "|" + RvScore2 + "|" + RvComment2 + "|" + RvScore3 + "|" + RvComment3 + "|" + RvScore4 + "|" + RvComment4 + "|" + RvScore5 + "|" + RvComment5 + "|" + RvScore6 + "|" + RvComment6 + "\n")
-
-        #       print('\n ***************************************************')
-
         count_final = count_div + count_final
     #    print('----Loop Ended with ',count_div,' divs---- \n \n')
     if passFlag == True: # Jaykishan
