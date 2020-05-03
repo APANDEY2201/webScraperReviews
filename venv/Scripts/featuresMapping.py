@@ -1,4 +1,5 @@
 import csv
+import nltk
 
 
 def unique(list1):
@@ -15,6 +16,9 @@ def unique(list1):
 
 def sentenceWordRelation(sentence, wrdList):
     cnt = 0
+    stemmerDe = nltk.stem.cistem.Cistem()
+    stemmerEn = nltk.SnowballStemmer("english")
+
     for wrd in wrdList:
         if wrd in sentence:
             cnt = cnt + 1
@@ -41,7 +45,7 @@ for i in range(1,len(masterData)):
     for j in range(len(features)):
         score = 0
         for k in range(len(keywordsTable)):
-            if features[j] == keywordsTable[k]:
+            if features[j] == keywordsTable[k][0]:
                 for l in range(1,len(keywordsTable[k])):
                     wrdList = keywordsTable[k][l].split(' ')
                     result = sentenceWordRelation(sentence,wrdList)
