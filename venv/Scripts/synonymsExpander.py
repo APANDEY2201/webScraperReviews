@@ -26,18 +26,18 @@ for i in range(len(keywordsTable_input)):
         for j in range(noDeSyns):
             wrd = data['synsets'][0]['terms'][j]['term'].lower()
             result = re.sub("[\(\[].*?[\)\]]", "", wrd)
-            deSyns.append(result.replace('-',' ').replace('_',' ').replace(',',' ').strip())
+            deSyns.append("de:" + result.replace('-',' ').replace('_',' ').replace(',',' ').strip())
     except:
         deSyns = []
 
     for syn in wordnet.synsets(enWord):
         for l in syn.lemmas():
-            enSyns.append(l.name().lower().replace('-',' ').replace('_',' ').replace(',',' ').strip())
+            enSyns.append("en:" + l.name().lower().replace('-',' ').replace('_',' ').replace(',',' ').strip())
 
     comparators = enSyns + deSyns
 
-    print(keywordsTable_input[i])
-
+    keywordsTable_input[i][1] =  "de:" + keywordsTable_input[i][1]
+    keywordsTable_input[i][2] = "en:" + keywordsTable_input[i][2]
     keywordsTable_input[i] = keywordsTable_input[i] + comparators
 
     print(keywordsTable_input[i])
