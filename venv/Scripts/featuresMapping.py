@@ -35,8 +35,14 @@ def sentenceWordRelation(sentence, wrdList, rvNo, feature,keywordLang):
     tokensDe = []
     tokensEn = []
     for token in word_tokens:
-        tokensDe.append(stemmerDe.stem(token).lower())
-        tokensEn.append(stemmerEn.stem(token).lower())
+        if '.' in token:
+            tokensDe.append(stemmerDe.stem(token.split('.')[0]).lower())
+            tokensDe.append(stemmerDe.stem(token.split('.')[1]).lower())
+            tokensEn.append(stemmerEn.stem(token.split('.')[0]).lower())
+            tokensEn.append(stemmerEn.stem(token.split('.')[1]).lower())
+        else:
+            tokensDe.append(stemmerDe.stem(token).lower())
+            tokensEn.append(stemmerEn.stem(token).lower())
 
     if itsGerman == True:
         cntDe = 0
@@ -44,7 +50,7 @@ def sentenceWordRelation(sentence, wrdList, rvNo, feature,keywordLang):
             if itsGermanKeyword == True:
                 for wrd in wrdList:
                     wrd = wrd.replace("de:","")
-                    if stemmerDe.stem(wrd) in tokenDe:
+                    if stemmerDe.stem(wrd) == tokenDe:
                         cntDe = cntDe + 1
                 if cntDe == len(wrdList):
                     # print("review number: " + str(rvNo) + " belonging to feature " + feature.upper() + " and words are: " + str(wrdList))
@@ -55,7 +61,7 @@ def sentenceWordRelation(sentence, wrdList, rvNo, feature,keywordLang):
             if itsGermanKeyword == False:
                 for wrd in wrdList:
                     wrd = wrd.replace("en:", "")
-                    if stemmerEn.stem(wrd) in tokenEn:
+                    if stemmerEn.stem(wrd) == tokenEn:
                         cntEn = cntEn + 1
                 if cntEn == len(wrdList):
                     print("review number: " + str(rvNo) + " belonging to feature " + feature.upper() + " and words are: " + str(wrdList))
@@ -77,8 +83,8 @@ masterData[0] = masterData[0] + features
 
 outFile.append(masterData[0])
 
-for i in range(49,50):
-# for i in range(1,len(masterData)):
+# for i in range(49,50):
+for i in range(1,len(masterData)):
     sentence = masterData[i][9]
     scoreList = []
     for j in range(len(features)):
