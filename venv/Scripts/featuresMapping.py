@@ -58,6 +58,7 @@ def sentenceWordRelation(sentence, wrdList, rvNo, feature,keywordLang):
                     if stemmerEn.stem(wrd) in tokenEn:
                         cntEn = cntEn + 1
                 if cntEn == len(wrdList):
+                    print("review number: " + str(rvNo) + " belonging to feature " + feature.upper() + " and words are: " + str(wrdList))
                     return True
 
 csvFileName = 'KeywordsTable_output.csv'
@@ -76,7 +77,8 @@ masterData[0] = masterData[0] + features
 
 outFile.append(masterData[0])
 
-for i in range(1,len(masterData)):
+for i in range(49,50):
+# for i in range(1,len(masterData)):
     sentence = masterData[i][9]
     scoreList = []
     for j in range(len(features)):
