@@ -58,6 +58,7 @@ rev_pages=500
 count_final=0
 
 rev_org_dict={'adidas ag':'adidas','Allianz SE':'allianz-deutschland','BASF SE':'basf-se','Bayerische Motoren Werke AG':'bayerische-motoren-werke','Beiersdorf Aktiengesellschaft':'beiersdorf','Deutsche Bank AG':'deutsche-bank','Deutsche Lufthansa AG':'deutsche-lufthansa','Deutsche Post AG':'deusche-post','SAP SE':'sap','Wirecard AG':'wirecard'}
+# rev_org_dict={'SAP SE':'sap','Wirecard AG':'wirecard'}
 rev_org_domain=''
 OrgSales= ''
 OrgNoOfEmployees= ''
@@ -223,7 +224,7 @@ for Org, org_url_alias in rev_org_dict.items():
                 RverMonthYear= '  '
             #print('rev_mnth:: ', rev_mnth)
             try:
-                RvComment1 = indiv_divs.div.h3.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RvComment1 = indiv_divs.div.h3.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
             except:
                 RvComment1= '  '
             #print('rev_heading:: ', rev_heading)
@@ -234,7 +235,7 @@ for Org, org_url_alias in rev_org_dict.items():
             #print('rev_rating:: ', rev_rating)
             # Employee details
             try:
-                RverPosition = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RverPosition = indiv_divs.find("span", {"class": "index__position__mCyeO"}).text.replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
             except:
                 RverPosition= '  '
             #print(rev_emp_position)
@@ -244,9 +245,21 @@ for Org, org_url_alias in rev_org_dict.items():
                 RverLoc= '  '
             #print(rev_emp_dept_loc)
             try:
-                RverRecom = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                RverRecom = indiv_divs.find("span", {"class": "index__recommendation__jftd3"}).text.replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
             except:
                 RverRecom= '  '
+
+
+
+
+            # try:
+            #     RvComment1 = indiv_divs.find_all("div", {"class": "index__factor__3Z15R"}).text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+            # except:
+            #     RvComment1= '  '
+
+
+
+
             #print('rev_emp_recmndatn :: ', rev_emp_recmndatn)
 
             # defining all variables
@@ -266,11 +279,36 @@ for Org, org_url_alias in rev_org_dict.items():
             RvReviewAbout6 = ''
             RvScore6 = ''
             RvComment6 = ''
+            RvReviewAbout10 = ''
+            RvScore10 = ''
+            RvComment10 = ''
+
+            RvReviewAbout7 = 'Corona1' # Corona 1 # Wofür möchtest du deinen Arbeitgeber im Umgang mit der Corona-Situation loben?
+            RvComment7 = ''
+            RvReviewAbout8 = 'Corona2' # Corona 2 # Wo siehst du Chancen für deinen Arbeitgeber mit der Corona-Situation besser umzugehen?
+            RvComment8 = ''
+            RvReviewAbout9 = 'Corona3' # Corona 3 # Wie kann dich dein Arbeitgeber im Umgang mit der Corona-Situation noch besser unterstützen?
+            RvComment9 = ''
 
             #    list_diversity=['Arbeitsatmosphäre','Kollegenzusammenhalt','Gleichberechtigung','Umgang mit älteren Kollegen','Umwelt-/Sozialbewusstsein']
             rev_internalAttributes = indiv_divs.find_all("div", {"class": "index__factor__3Z15R"})
             for rev_class in rev_internalAttributes:
                 #        print('rev_class', rev_class)
+                if ('Wofür möchtest du deinen Arbeitgeber' in rev_class.h4.text):
+                    try:
+                        RvComment7 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
+                    except:
+                        RvComment7 = '  '
+                if ('Wo siehst du Chancen' in rev_class.h4.text):
+                    try:
+                        RvComment8 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
+                    except:
+                        RvComment8 = '  '
+                if ('Wie kann dich dein Arbeitgeber' in rev_class.h4.text):
+                    try:
+                        RvComment9 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
+                    except:
+                        RvComment9 = '  '
                 if (rev_class.h4.text == 'Arbeitsatmosphäre'):
                     try:
                         RvReviewAbout2 = rev_class.h4.text
@@ -281,7 +319,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvScore2= '  '
                     try:
-                        RvComment2 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment2 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
                     except:
                         RvComment2 = '  '
                 if (rev_class.h4.text == 'Kollegenzusammenhalt'):
@@ -294,7 +332,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvScore3= '  '
                     try:
-                        RvComment3 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment3 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
                     except:
                         RvComment3 = '  '
                 if (rev_class.h4.text == 'Gleichberechtigung'):
@@ -307,7 +345,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvScore4= '  '
                     try:
-                        RvComment4 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment4 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
                     except:
                         RvComment4 = '  '
                 if (rev_class.h4.text == 'Umgang mit älteren Kollegen'):
@@ -320,7 +358,7 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvScore5= '  '
                     try:
-                        RvComment5 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment5 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
                     except:
                         RvComment5 = '  '
                 if (rev_class.h4.text == 'Umwelt-/Sozialbewusstsein'):
@@ -333,9 +371,23 @@ for Org, org_url_alias in rev_org_dict.items():
                     except:
                         RvScore6= '  '
                     try:
-                        RvComment6 = rev_class.p.text.replace('\n', ' ').replace('\r', '') # Jaykishan 2
+                        RvComment6 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
                     except:
                         RvComment6 = '  '
+                if (rev_class.h4.text == 'Work-Life-Balance'):
+                    try:
+                        RvReviewAbout10 = rev_class.h4.text
+                    except:
+                        RvReviewAbout10= '  '
+                    try:
+                        RvScore10 = rev_class.span["data-score"].replace('.', '').replace(',', '.')
+                    except:
+                        RvScore10= '  '
+                    try:
+                        # RvComment10= rev_class.p.text.replace('\n', ' ').replace('\r', ' ') # Jaykishan 2
+                        RvComment10 = rev_class.p.get_text(separator=" ").replace('\n', ' ').replace('\r', ' ')
+                    except:
+                        RvComment10 = '  '
 
             #    print('rev_internalAttributes:: ',rev_internalAttributes)
             #     print('rev_wrk_atmos:: ', rev_wrk_atmos)
@@ -367,6 +419,14 @@ for Org, org_url_alias in rev_org_dict.items():
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout5, RvScore5, RvComment5))
             f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
                                     RverPosition, RverLoc, RverRecom, RvReviewAbout6, RvScore6, RvComment6))
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
+                               RverPosition, RverLoc, RverRecom, RvReviewAbout7, "NA", RvComment7))
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
+                               RverPosition, RverLoc, RverRecom, RvReviewAbout8, "NA", RvComment8))
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
+                               RverPosition, RverLoc, RverRecom, RvReviewAbout9, "NA", RvComment9))
+            f_csv_list.append((Org, OrgSector, RverMonthYear, str(userCounter),
+                               RverPosition, RverLoc, RverRecom, RvReviewAbout10, RvScore10, RvComment10))
             userCounter = userCounter + 1
             csv_out = csv.writer(masterDataFile, delimiter='|')
             csv_out.writerows(f_csv_list)
