@@ -38,8 +38,8 @@ if __name__ == '__main__':
     stop_words_en = stop_words_en + ['com', 'edu', 'subject', 'lines', 'organization', 'would', 'article', 'could']
     stop_words_de = stopwords.words('german')
 
-    csvFileName = 'Master_Data_Milestone1_Small_for_training.csv'
-    masterDataSmall = list(csv.reader(open(csvFileName), delimiter='|'))  # CSV file to 2 dimensional list of string
+    csvFileName1 = 'Master_Data_Milestone1_Small_for_training.csv'
+    masterDataSmall = list(csv.reader(open(csvFileName1), delimiter='|'))  # CSV file to 2 dimensional list of string
     reviews = [row[9] for row in masterDataSmall]
     # print(reviews)
 
@@ -51,8 +51,8 @@ if __name__ == '__main__':
     tokenizer = nltk.RegexpTokenizer(r"\w+")
 
     for doc in reviews:
-        stemmerDe = nltk.stem.cistem.Cistem()
-        stemmerEn = nltk.SnowballStemmer("english")
+        # stemmerDe = nltk.stem.cistem.Cistem()
+        # stemmerEn = nltk.SnowballStemmer("english")
         itsGerman = True
         try:
             if detect(doc) == 'en':
@@ -101,11 +101,13 @@ if __name__ == '__main__':
     dct = corpora.Dictionary(data_processed)
     corpus = [dct.doc2bow(line) for line in data_processed]
 
+    noOfTopics = 7
+
     # Step 4: Train the LDA model
     lda_model = LdaMulticore(corpus=corpus,
                              id2word=dct,
                              random_state=100,
-                             num_topics=7,
+                             num_topics=noOfTopics,
                              passes=10,
                              chunksize=1000,
                              batch=False,
@@ -123,3 +125,67 @@ if __name__ == '__main__':
 
     # See the topics
     lda_model.print_topics(-1)
+
+    csvFileName2 = 'Master_Data_Milestone1_Big_for_fitting.csv'
+    masterDataBig = list(csv.reader(open(csvFileName2), delimiter='|'))  # CSV file to 2 dimensional list of string
+
+    csvFileNameOut = 'Master_Data_Milestone1_Big_Fitted.csv'
+    csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
+    csv_out = csv.writer(csvFileOut, delimiter='|')
+    csv_out.writerow(masterDataBig[0] + ['topic' + str(i) for i in range(noOfTopics)])
+
+    # for j in range(1, 2):  # len(masterDataBig)):
+    for j in range(1, len(masterDataBig)):
+        doc = masterDataBig[j][9]
+
+        itsGerman = True
+        try:
+            if detect(doc) == 'en':
+                itsGerman = False
+        except:
+            itsGerman = True
+
+        doc_out = []
+
+        # doc = nltk.tokenize.word_tokenize(doc)
+
+        doc = tokenizer.tokenize(doc)
+
+        if itsGerman == True:
+
+            for wd in doc:
+                wd = wd.lower()
+                if wd not in stop_words_de:  # remove stopwords
+                    # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
+                    lemmed_word = germanSpacyLemmatizer(wd)
+                    if lemmed_word:
+                        doc_out = doc_out + [lemmed_word]
+                else:
+                    continue
+
+        else:
+
+            for wd in doc:
+                wd = wd.lower()
+                if wd not in stop_words_en:  # remove stopwords
+                    # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
+                    lemmed_word = englishSpacyLemmatizer(wd)
+                    if lemmed_word:
+                        doc_out = doc_out + [lemmed_word]
+                else:
+                    continue
+
+        corpus2 = [dct.doc2bow(doc_out)]
+        vector = lda_model[corpus2]  # get topic probability distribution for a document
+        # print(vector[0][0])
+        vector2 = vector[0][0]
+        finalVector = []
+        for k in range(7):
+            finalVector_temp = []
+            finalVector_temp.append(k)
+            finalVector_temp.append(0)
+            for l in range(len(vector2)):
+                if vector2[l][0] == k:
+                    finalVector_temp[1] = vector2[l][1]
+            finalVector.append(finalVector_temp)
+        csv_out.writerow(masterDataBig[j] + [row[1] for row in finalVector])
