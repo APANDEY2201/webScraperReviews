@@ -101,7 +101,7 @@ if __name__ == '__main__':
     dct = corpora.Dictionary(data_processed)
     corpus = [dct.doc2bow(line) for line in data_processed]
 
-    noOfTopics = 7
+    noOfTopics = 10
 
     # Step 4: Train the LDA model
     lda_model = LdaMulticore(corpus=corpus,
@@ -111,10 +111,10 @@ if __name__ == '__main__':
                              passes=10,
                              chunksize=1000,
                              batch=False,
-                             alpha='asymmetric',
+                             alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5],
                              decay=0.5,
                              offset=64,
-                             eta=None,
+                             eta=None, # eta=1/370,
                              eval_every=0,
                              iterations=100,
                              gamma_threshold=0.001,
@@ -125,6 +125,9 @@ if __name__ == '__main__':
 
     # See the topics
     lda_model.print_topics(-1)
+    # print(lda_model.get_topic_terms(0,370))
+    # print(lda_model.get_topic_terms(1,370))
+    # print(lda_model.get_term_topics(102,1))
 
     csvFileName2 = 'Master_Data_Milestone1_Big_for_fitting.csv'
     masterDataBig = list(csv.reader(open(csvFileName2), delimiter='|'))  # CSV file to 2 dimensional list of string
@@ -134,8 +137,8 @@ if __name__ == '__main__':
     csv_out = csv.writer(csvFileOut, delimiter='|')
     csv_out.writerow(masterDataBig[0] + ['topic' + str(i) for i in range(noOfTopics)])
 
-    # for j in range(1, 2):  # len(masterDataBig)):
-    for j in range(1, len(masterDataBig)):
+    for j in range(108, 110):  # len(masterDataBig)):
+    # for j in range(1, len(masterDataBig)):
         doc = masterDataBig[j][9]
 
         itsGerman = True
@@ -176,9 +179,13 @@ if __name__ == '__main__':
                     continue
 
         corpus2 = [dct.doc2bow(doc_out)]
-        vector = lda_model[corpus2]  # get topic probability distribution for a document
-        # print(vector[0][0])
-        vector2 = vector[0][0]
+        # print(corpus2)
+        # word_counts = [[(dct[id], count) for id, count in line] for line in corpus2]
+        # print(word_counts)
+        vector = lda_model[corpus2[0]]  # get topic probability distribution for a document
+        # vector = lda_model[lda_model.id2word.doc2bow(doc_out)]  # get topic probability distribution for a document
+        # print(vector)
+        vector2 = vector[0]
         finalVector = []
         for k in range(7):
             finalVector_temp = []
