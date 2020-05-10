@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # stop_words_en = stop_words_en + ['com', 'edu', 'subject', 'lines', 'organization', 'would', 'article', 'could']
     stop_words_de = stopwords.words('german')
 
-    csvFileName1 = 'Master_Data_Milestone1_for_training.csv' #Master_Data_Milestone1_Small_for_training.csv'
+    csvFileName1 = 'Master_Data_Milestone1_for_training_temp.csv' #Master_Data_Milestone1_Small_for_training.csv'
     masterDataSmall = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
     reviews = [row[9] for row in masterDataSmall]
     # print(reviews)
@@ -138,10 +138,19 @@ if __name__ == '__main__':
     # print(lda_model.get_topic_terms(1,370))
     # print(lda_model.get_term_topics(102,1))
 
-    csvFileName2 = 'Master_Data_Milestone1.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
+    topicTermsFile = open('TopicTermsData.txt', 'w')
+    for s in range(noOfTopics):
+        vec = lda_model.get_topic_terms(s,len(dct))
+        toPrint = 'Topic no.: ' + str(s) + ' | '
+        for h in range(len(dct)):
+           toPrint = toPrint + dct.id2token[vec[h][0]] + ' : ' + str(vec[h][1]) + ' | '
+        print(toPrint)
+        topicTermsFile.writelines(toPrint + '\n')
+
+    csvFileName2 = 'Master_Data_Milestone1_temp.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
     masterDataBig = list(csv.reader(open(csvFileName2), delimiter='|'))  # CSV file to 2 dimensional list of string
 
-    csvFileNameOut = 'Master_Data_Milestone1_Fitted.csv'
+    csvFileNameOut = 'Master_Data_Milestone1_Fitted_temp.csv'
     csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
     csv_out = csv.writer(csvFileOut, delimiter='|')
     csv_out.writerow(masterDataBig[0] + ['topic' + str(i) for i in range(noOfTopics)])
