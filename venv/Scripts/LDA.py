@@ -46,8 +46,8 @@ if __name__ == '__main__':
     # stop_words_en = stop_words_en + ['com', 'edu', 'subject', 'lines', 'organization', 'would', 'article', 'could']
     stop_words_de = stopwords.words('german')
 
-    csvFileName1 = 'Master_Data_Milestone1_for_training_temp.csv' #Master_Data_Milestone1_Small_for_training.csv'
-    masterDataSmall = list(csv.reader(open(csvFileName1), delimiter='|'))  # CSV file to 2 dimensional list of string
+    csvFileName1 = 'Master_Data_Milestone1_for_training.csv' #Master_Data_Milestone1_Small_for_training.csv'
+    masterDataSmall = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
     reviews = [row[9] for row in masterDataSmall]
     # print(reviews)
 
@@ -107,9 +107,10 @@ if __name__ == '__main__':
 
     # Step 3: Create the Inputs of LDA model: Dictionary and Corpus
     dct = corpora.Dictionary(data_processed)
+    # print(str(len(dct)) + ' unique tokens')
     corpus = [dct.doc2bow(line) for line in data_processed]
 
-    noOfTopics = 5
+    noOfTopics = 10
 
     # Step 4: Train the LDA model
     lda_model = LdaMulticore(corpus=corpus,
@@ -119,10 +120,10 @@ if __name__ == '__main__':
                              passes=10,
                              chunksize=1000,
                              batch=False,
-                             alpha = 1/10, #alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5],
+                             alpha = 0.8, #alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5], #greater than 1 gives docs all topics alomost equal prob
                              decay=0.5,
                              offset=64,
-                             eta = 1/1779, #eta=None, # eta=1/370,
+                             eta = 1/len(dct), #eta=None, # eta=1/370,
                              eval_every=0,
                              iterations=100,
                              gamma_threshold=0.001,
@@ -137,10 +138,10 @@ if __name__ == '__main__':
     # print(lda_model.get_topic_terms(1,370))
     # print(lda_model.get_term_topics(102,1))
 
-    csvFileName2 = 'Master_Data_Milestone1_temp.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
+    csvFileName2 = 'Master_Data_Milestone1.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
     masterDataBig = list(csv.reader(open(csvFileName2), delimiter='|'))  # CSV file to 2 dimensional list of string
 
-    csvFileNameOut = 'Master_Data_Milestone1_Fitted_temp.csv'
+    csvFileNameOut = 'Master_Data_Milestone1_Fitted.csv'
     csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
     csv_out = csv.writer(csvFileOut, delimiter='|')
     csv_out.writerow(masterDataBig[0] + ['topic' + str(i) for i in range(noOfTopics)])
@@ -205,3 +206,6 @@ if __name__ == '__main__':
                         finalVector_temp[1] = vector2[l][1]
                 finalVector.append(finalVector_temp)
             csv_out.writerow(masterDataBig[j] + [row[1] for row in finalVector])
+
+        if j % 100 == 0:
+            print(str(j) + " reviews processed.")
