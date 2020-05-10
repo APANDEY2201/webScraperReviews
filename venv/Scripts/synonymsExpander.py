@@ -4,7 +4,8 @@ import nltk
 import csv
 import re
 
-# print(wn.synsets('equality')[1].lemmas()[].name())
+# print(wordnet.synsets('equality')[1].lemmas()[].name())
+print(wordnet.synsets('equality'))
 
 for syn in wordnet.synsets('equality'):
     for l in syn.lemmas():

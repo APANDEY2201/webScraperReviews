@@ -1,0 +1,119 @@
+import csv
+from langdetect import detect
+import spacy
+import nltk
+from nltk.corpus import stopwords
+
+csvFileName = 'KeywordsTable_output_IMP.csv'
+keywordsTable = list(csv.reader(open(csvFileName),delimiter=',')) # CSV file to 2 dimensional list of string
+keywordsTableDe = []
+keywordsTableEn = []
+
+nlpDe = spacy.load('de_core_news_sm')
+nlpEn = spacy.load("en_core_web_sm")
+
+stop_words_en = stopwords.words('english')
+stop_words_de = stopwords.words('german')
+
+tokenizer = nltk.RegexpTokenizer(r"\w+")
+
+def unique(list1):
+    # intilize a null list
+    unique_list = []
+
+    # traverse for all elements
+    for x in list1:
+        # check if exists in unique_list or not
+        if x not in unique_list:
+            unique_list.append(x)
+
+    return unique_list
+
+def germanSpacyLemmatizer(token):
+    lemmed = ''
+    for t in nlpDe.tokenizer(token):
+        lemmed = lemmed + ' ' + t.lemma_
+    return lemmed.strip()
+
+def englishSpacyLemmatizer(token):
+    lemmed = ''
+    for t in nlpEn.tokenizer(token):
+        lemmed = lemmed + ' ' + t.lemma_
+    return lemmed.strip()
+
+for j in range(len(keywordsTable)):
+    for k in range(1,len(keywordsTable[j])):
+        keyword = keywordsTable[j][k]
+        keywordLang = keyword[0:3]
+        keyword = keyword.replace('en:','').replace('de:','')
+        itsGermanKeyword = True
+        if keywordLang == "en:":
+            itsGermanKeyword = False
+        else:
+            itsGermanKeyword = True
+        if itsGermanKeyword == True:
+            keyword = germanSpacyLemmatizer(keyword)
+            keywordsTableDe.append(keyword)
+        else:
+            keyword = englishSpacyLemmatizer(keyword)
+            keywordsTableEn.append(keyword)
+
+keywordsTableEn = unique(keywordsTableEn)
+keywordsTableDe = unique(keywordsTableDe)
+
+def reviewHit(review):
+    fetchThis = False
+    doc = review
+    itsGerman = True
+    try:
+        if detect(doc) == 'en':
+            itsGerman = False
+    except:
+        itsGerman = True
+
+    doc = tokenizer.tokenize(doc)
+
+    if itsGerman == True:
+        for wd in doc:
+            wd = wd.lower()
+            if wd not in stop_words_de:  # remove stopwords
+                # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
+                lemmed_word = germanSpacyLemmatizer(wd)
+                if lemmed_word in keywordsTableDe:
+                    fetchThis = True
+                    return fetchThis
+            else:
+                continue
+    else:
+        for wd in doc:
+            wd = wd.lower()
+            if wd not in stop_words_en:  # remove stopwords
+                # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
+                lemmed_word = englishSpacyLemmatizer(wd)
+                if lemmed_word in keywordsTableEn:
+                    fetchThis = True
+                    return fetchThis
+            else:
+                continue
+
+csvFileName = 'Master_Data_Milestone1.csv'
+masterData = list(csv.reader(open(csvFileName),delimiter='|')) # CSV file to 2 dimensional list of string
+
+features = [i[0] for i in keywordsTable]
+
+features = unique(features)
+
+csvFileNameOut = 'Master_Data_Milestone1_for_training.csv'
+csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
+csv_out = csv.writer(csvFileOut, delimiter='|')
+csv_out.writerow(masterData[0]) # + features)
+
+for i in range(1,len(masterData)):
+    review = masterData[i][9].strip()
+    if (masterData[i][7] == 'Gleichberechtigung' or masterData[i][7] ==  'Umgang mit älteren Kollegen') and review != '':
+        csv_out.writerow(masterData[i])
+    if reviewHit(review) == True:
+        csv_out.writerow(masterData[i])
+
+    if i%100 == 0:
+        print(str(i) + " reviews processed.")
