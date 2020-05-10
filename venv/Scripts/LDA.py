@@ -29,13 +29,21 @@ if __name__ == '__main__':
             lemmed = lemmed + ' ' + t.lemma_
         return lemmed.strip()
 
+    def germanSpacyPOS(token):
+        return nlpDe(token)[0].pos_
+    def englishSpacyPOS(token):
+        return nlpEn(token)[0].pos_
+
+    # print(germanSpacyPOS('gehen'))
+    # print(englishSpacyPOS('language'))
+
     # print(englishSpacyLemmatizer('going'))
     # print(germanSpacyLemmatizer('gehst'))
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
     logging.root.setLevel(level=logging.INFO)
     stop_words_en = stopwords.words('english')
-    stop_words_en = stop_words_en + ['com', 'edu', 'subject', 'lines', 'organization', 'would', 'article', 'could']
+    # stop_words_en = stop_words_en + ['com', 'edu', 'subject', 'lines', 'organization', 'would', 'article', 'could']
     stop_words_de = stopwords.words('german')
 
     csvFileName1 = 'Master_Data_Milestone1_for_training_temp.csv' #Master_Data_Milestone1_Small_for_training.csv'
@@ -73,7 +81,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_de:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = germanSpacyLemmatizer(wd)
-                    if lemmed_word:
+                    if germanSpacyPOS(lemmed_word) == 'NOUN' or germanSpacyPOS(lemmed_word) == 'ADJ' or germanSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
@@ -85,7 +93,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_en:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = englishSpacyLemmatizer(wd)
-                    if lemmed_word:
+                    if englishSpacyPOS(lemmed_word) == 'NOUN' or englishSpacyPOS(lemmed_word) == 'ADJ' or englishSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
