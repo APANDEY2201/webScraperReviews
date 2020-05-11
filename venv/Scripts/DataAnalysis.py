@@ -2,6 +2,22 @@ import numpy as np
 import csv
 import pandas as pd
 from sklearn.cluster import KMeans
+import scipy.stats as stats
+import statsmodels.formula.api as sm
+from scipy.stats import chisquare
+from scipy.stats import chi2_contingency
+
+def ChiTest(contingencyTable):
+    stat, p, dof, expected = chi2_contingency(contingencyTable)
+    alpha = 0.05
+    # print(stat)
+    # print('significance=%.3f, p=%.3f' % (alpha, p))
+    if p <= alpha:
+        return True
+        # print('Variables are associated (reject H0)')
+    else:
+        return False
+        # print('Variables are not associated(fail to reject H0)')
 
 # ----------------------------------------------------------------------------
 # Data imports
@@ -77,10 +93,26 @@ dataFrameNeg = dataFrame[dataFrame['RvScore2']=="Neg"]
 dataFrame_KMeans = dataFrame.iloc[:,10:20]
 dataFramePos_KMeans = dataFramePos.iloc[:,10:20]
 dataFrameNeg_KMeans = dataFrameNeg.iloc[:,10:20]
-
-# print(dataFrame_KMeans.head(20))
-
 kmeans_df = KMeans(n_clusters=noOfClusters, random_state=0).fit(dataFrame_KMeans)
 dataFrame['Cluster'] = kmeans_df.labels_
+kmeans_dfPos = KMeans(n_clusters=noOfClusters, random_state=0).fit(dataFramePos_KMeans)
+dataFramePos['Cluster'] = kmeans_dfPos.labels_
+kmeans_dfNeg = KMeans(n_clusters=noOfClusters, random_state=0).fit(dataFrameNeg_KMeans)
+dataFrameNeg['Cluster'] = kmeans_dfNeg.labels_
 
-print(dataFrame)
+# print(dataFrame.head(10))
+
+# print(dataFrameOrg.iloc[:,[0,4,5,6]])
+
+# ----------------------------------------------------------------------------
+# Correlation Statistics
+# ----------------------------------------------------------------------------
+
+dataFrame = pd.merge(dataFrame, dataFrameOrg.iloc[:,[0,4,5,6]], on='Org')
+dataFramePos = pd.merge(dataFramePos, dataFrameOrg.iloc[:,[0,4,5,6]], on='Org')
+dataFrameNeg = pd.merge(dataFrameNeg, dataFrameOrg.iloc[:,[0,4,5,6]], on='Org')
+
+# print(dataFramePos.tail(10))
+
+dataFrame_CorStat = dataFrame.filter(items=['Org','OrgSector','OrgKununuScore','OrgTotalKununuReviews','OrgRecomPercent','RverMonthYear','RverPosition','RverLocation','RverRecom','RvScore2','Cluster'])
+dataFrame_CorStat_cont = pd.crosstab(dataFrame_CorStat.OrgSector, dataFrame_CorStat.Cluster)
