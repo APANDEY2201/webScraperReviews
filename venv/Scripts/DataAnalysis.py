@@ -2,10 +2,23 @@ import numpy as np
 import csv
 import pandas as pd
 from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
 import scipy.stats as stats
 import statsmodels.formula.api as sm
 from scipy.stats import chisquare
 from scipy.stats import chi2_contingency
+import math
+import glob
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import urllib3
+from sklearn.externals import joblib
+import random
+import matplotlib
+from sompy.sompy import SOMFactory
+from sompy.visualization.plot_tools import plot_hex_map
+import logging
 
 def ChiTest(contingencyTable):
     stat, p, dof, expected = chi2_contingency(contingencyTable)
@@ -18,6 +31,7 @@ def ChiTest(contingencyTable):
     else:
         return False
         # print('Variables are not associated(fail to reject H0)')
+
 
 # ----------------------------------------------------------------------------
 # Data imports
@@ -100,7 +114,7 @@ dataFramePos['Cluster'] = kmeans_dfPos.labels_
 kmeans_dfNeg = KMeans(n_clusters=noOfClusters, random_state=0).fit(dataFrameNeg_KMeans)
 dataFrameNeg['Cluster'] = kmeans_dfNeg.labels_
 
-# print(dataFrame.head(10))
+print(dataFrame.head(10))
 
 # print(dataFrameOrg.iloc[:,[0,4,5,6]])
 
@@ -116,3 +130,92 @@ dataFrameNeg = pd.merge(dataFrameNeg, dataFrameOrg.iloc[:,[0,4,5,6]], on='Org')
 
 dataFrame_CorStat = dataFrame.filter(items=['Org','OrgSector','OrgKununuScore','OrgTotalKununuReviews','OrgRecomPercent','RverMonthYear','RverPosition','RverLocation','RverRecom','RvScore2','Cluster'])
 dataFrame_CorStat_cont = pd.crosstab(dataFrame_CorStat.OrgSector, dataFrame_CorStat.Cluster)
+
+# ----------------------------------------------------------------------------
+# PCA
+# ----------------------------------------------------------------------------
+
+pca = PCA(n_components=2)
+principalComponents = pca.fit_transform(dataFrame_KMeans)
+principalDf = pd.DataFrame(data = principalComponents, columns = ['principal component 1', 'principal component 2'])
+# print(pca.components_)
+
+dataFrame['PC1'] = principalDf['principal component 1']
+dataFrame['PC2'] = principalDf['principal component 2']
+
+# print(dataFrame)
+dataFrame.to_csv('toTableau1.csv', encoding = 'utf-8')
+
+fig = plt.figure(figsize = (8,8))
+ax = fig.add_subplot(1,1,1)
+ax.set_xlabel('Principal Component 1', fontsize = 15)
+ax.set_ylabel('Principal Component 2', fontsize = 15)
+ax.set_title('2 component PCA', fontsize = 20)
+targets = ['Pos', 'Neg']
+colors = ['r', 'g', 'b']
+for target, color in zip(targets,colors):
+    indicesToKeep = dataFrame['RvScore2'] == target
+    ax.scatter(dataFrame.loc[indicesToKeep, 'PC1']
+               , dataFrame.loc[indicesToKeep, 'PC2']
+               , c = color
+               , s = 50)
+ax.legend(targets)
+ax.grid()
+
+xVals = pca.components_[0]
+yVals = pca.components_[1]
+
+print(xVals)
+print(yVals)
+
+for o in range(len(xVals)):
+    x_values = [0, xVals[o]]
+    y_values = [0, yVals[o]]
+    plt.plot(x_values, y_values)
+
+plt.show()
+
+# ----------------------------------------------------------------------------
+# SOM
+# ----------------------------------------------------------------------------
+
+# for i in range(2):
+#     sm = SOMFactory.build(dataFrame_KMeans, mapsize=[random.choice(list(range(15, 25))), random.choice(list(range(10, 15)))], normalization = 'var', initialization='random', component_names=list(dataFrame_KMeans.columns.values), lattice="hexa")
+#     sm.train(n_job=4, verbose=False, train_rough_len=30, train_finetune_len=100)
+#     joblib.dump(sm, "model_{}.joblib".format(i))
+#
+#
+# # Study the models trained and plot the errors obtained in order to select the best one
+# models_pool = glob.glob("./model*")
+# errors=[]
+# for model_filepath in models_pool:
+#     sm = joblib.load(model_filepath)
+#     topographic_error = 0
+#     quantization_error = 0
+#     topographic_error = sm.calculate_topographic_error()
+#     quantization_error = sm.calculate_quantization_error()
+#     errors.append((topographic_error, quantization_error))
+#     # print(errors)
+# e_top, e_q = zip(*errors)
+#
+# # plt.scatter(e_top, e_q)
+# # plt.xlabel("Topographic error")
+# # plt.ylabel("Quantization error")
+# # plt.show()
+#
+# # Manually select the model with better features. In this case, the #3 model has been selected because
+# # quantization error is distributed across 34-40u and the topographic error varies much more,
+# # so the model with lower topographic error has been selected. It is very important to keep the topographic
+# # error as low as possible to assure a correct prototyping.
+# selected_model = 1
+# sm = joblib.load(models_pool[selected_model])
+#
+# # topographic_error = sm.calculate_topographic_error()
+# # quantization_error = sm.calculate_quantization_error()
+# # print ("Topographic error = %s\n Quantization error = %s" % (topographic_error, quantization_error))
+#
+# from sompy.visualization.mapview import View2D
+# view2D  = View2D(10,10,"", text_size=7)
+# # view2D.show(sm, col_sz=5, which_dim="all", denormalize=True)
+# view2D.show(sm)
+# plt.show()

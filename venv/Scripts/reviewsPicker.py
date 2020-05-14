@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 
 csvFileName = 'KeywordsTable_output_IMP.csv'
-keywordsTable = list(csv.reader(open(csvFileName),delimiter=',')) # CSV file to 2 dimensional list of string
+keywordsTable = list(csv.reader(open(csvFileName,encoding='utf-8'),delimiter=',')) # CSV file to 2 dimensional list of string
 keywordsTableDe = []
 keywordsTableEn = []
 
@@ -60,6 +60,16 @@ for j in range(len(keywordsTable)):
 
 keywordsTableEn = unique(keywordsTableEn)
 keywordsTableDe = unique(keywordsTableDe)
+csvFileNameOut = 'keywordsEn.csv'
+csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
+csv_out = csv.writer(csvFileOut, delimiter='\n')
+csv_out.writerow(keywordsTableEn) # + features)
+csvFileNameOut = 'keywordsDe.csv'
+csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
+csv_out = csv.writer(csvFileOut, delimiter='\n')
+csv_out.writerow(keywordsTableDe) # + features)
+
+print('Keywords files created.')
 
 def reviewHit(review):
     fetchThis = False
@@ -97,7 +107,7 @@ def reviewHit(review):
                 continue
 
 csvFileName = 'Master_Data_Milestone1.csv'
-masterData = list(csv.reader(open(csvFileName),delimiter='|')) # CSV file to 2 dimensional list of string
+masterData = list(csv.reader(open(csvFileName,encoding='utf-8'),delimiter='|')) # CSV file to 2 dimensional list of string
 
 features = [i[0] for i in keywordsTable]
 
@@ -110,10 +120,22 @@ csv_out.writerow(masterData[0]) # + features)
 
 for i in range(1,len(masterData)):
     review = masterData[i][9].strip()
-    if (masterData[i][7] == 'Gleichberechtigung' or masterData[i][7] ==  'Umgang mit älteren Kollegen') and review != '':
+    if (review != ''):
         csv_out.writerow(masterData[i])
-    if reviewHit(review) == True:
-        csv_out.writerow(masterData[i])
+    # if ((masterData[i][7] == 'Gleichberechtigung' or masterData[i][7] ==  'Umgang mit älteren Kollegen') and review != '') or reviewHit(review) == True:
+    #     csv_out.writerow(masterData[i])
+    # if reviewHit(review) == True:
+    #     csv_out.writerow(masterData[i])
 
     if i%100 == 0:
         print(str(i) + " reviews processed.")
+
+csvFileNameOut = 'pickedReviews.csv'
+csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
+csv_out = csv.writer(csvFileOut, delimiter='|')
+csv_out.writerow(masterData[0][7:10]) # + features)
+
+for i in range(1,len(masterData)):
+    review = masterData[i][9].strip()
+    if (review != ''):
+        csv_out.writerow(masterData[i])

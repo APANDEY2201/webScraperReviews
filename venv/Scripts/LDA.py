@@ -12,6 +12,8 @@ if __name__ == '__main__':
     import csv
     from langdetect import detect
     import spacy
+    import xlsxwriter
+    import datetime
 
     nlpDe = spacy.load('de_core_news_sm')
 
@@ -81,7 +83,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_de:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = germanSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN' or germanSpacyPOS(lemmed_word) == 'ADJ' or germanSpacyPOS(lemmed_word) == 'VERB':
+                    if germanSpacyPOS(lemmed_word) == 'NOUN': # or germanSpacyPOS(lemmed_word) == 'ADJ' or germanSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
@@ -93,7 +95,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_en:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = englishSpacyLemmatizer(wd)
-                    if englishSpacyPOS(lemmed_word) == 'NOUN' or englishSpacyPOS(lemmed_word) == 'ADJ' or englishSpacyPOS(lemmed_word) == 'VERB':
+                    if englishSpacyPOS(lemmed_word) == 'NOUN': # or englishSpacyPOS(lemmed_word) == 'ADJ' or englishSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
@@ -112,6 +114,19 @@ if __name__ == '__main__':
 
     noOfTopics = 10
 
+    wordProbs = []
+    csvFileName1 = 'keywordsDe.csv'  # Master_Data_Milestone1_Small_for_training.csv'
+    impKeywordsDe = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
+    impKeywordsDeFinal = [i[0] for i in impKeywordsDe]
+    csvFileName1 = 'keywordsEn.csv'  # Master_Data_Milestone1_Small_for_training.csv'
+    impKeywordsEn = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
+    impKeywordsEnFinal = [i[0] for i in impKeywordsEn]
+    # print(impKeywordsFinal)
+    for d in range(len(dct)):
+        wordProbs.append(10)
+        if dct[d] in impKeywordsDeFinal or dct[d] in impKeywordsEnFinal:
+            wordProbs[d] = 90
+
     # Step 4: Train the LDA model
     lda_model = LdaMulticore(corpus=corpus,
                              id2word=dct,
@@ -120,10 +135,10 @@ if __name__ == '__main__':
                              passes=10,
                              chunksize=1000,
                              batch=False,
-                             alpha = 0.8, #alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5], #greater than 1 gives docs all topics alomost equal prob
+                             alpha = 0.01, #alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5], #greater than 1 gives docs all topics alomost equal prob
                              decay=0.5,
                              offset=64,
-                             eta = 1/len(dct), #eta=None, # eta=1/370,
+                             eta = wordProbs, #eta=None, # eta=1/370,
                              eval_every=0,
                              iterations=100,
                              gamma_threshold=0.001,
@@ -138,17 +153,17 @@ if __name__ == '__main__':
     # print(lda_model.get_topic_terms(1,370))
     # print(lda_model.get_term_topics(102,1))
 
-    topicTermsFile = open('TopicTermsData.txt', 'w')
+    topicTermsFile = open('TopicTermsData.txt', 'w', encoding='utf-8')
     for s in range(noOfTopics):
-        vec = lda_model.get_topic_terms(s,len(dct))
+        vec = lda_model.get_topic_terms(s,10)#len(dct))
         toPrint = 'Topic no.: ' + str(s) + ' | '
-        for h in range(len(dct)):
+        for h in range(10):#len(dct)):
            toPrint = toPrint + dct.id2token[vec[h][0]] + ' : ' + str(vec[h][1]) + ' | '
-        print(toPrint)
+        # print(toPrint)
         topicTermsFile.writelines(toPrint + '\n')
 
     csvFileName2 = 'Master_Data_Milestone1.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
-    masterDataBig = list(csv.reader(open(csvFileName2), delimiter='|'))  # CSV file to 2 dimensional list of string
+    masterDataBig = list(csv.reader(open(csvFileName2, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
 
     csvFileNameOut = 'Master_Data_Milestone1_Fitted.csv'
     csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
@@ -156,6 +171,7 @@ if __name__ == '__main__':
     csv_out.writerow(masterDataBig[0] + ['topic' + str(i) for i in range(noOfTopics)])
 
     # for j in range(108, 110):  # len(masterDataBig)):
+    benchmarkReviews = []
     for j in range(1, len(masterDataBig)):
         doc = masterDataBig[j][9].strip()
         if doc != '':
@@ -215,6 +231,68 @@ if __name__ == '__main__':
                         finalVector_temp[1] = vector2[l][1]
                 finalVector.append(finalVector_temp)
             csv_out.writerow(masterDataBig[j] + [row[1] for row in finalVector])
-
+            if len(masterDataBig[j][9].strip()) > 50:
+                benchmarkReviewsTemp = []
+                benchmarkReviewsTemp.append(masterDataBig[j][9].strip())
+                benchmarkReviewsTemp.append([row[1] for row in finalVector])
+                benchmarkReviews.append(benchmarkReviewsTemp)
         if j % 100 == 0:
             print(str(j) + " reviews processed.")
+
+    def reportIt(trainSetProps='', alphaProps='', etaProps='', trunTerms=len(dct)):
+        now = datetime.datetime.now()
+        currDateTime = (now.strftime("%d%m%Y_%H%M%S"))
+        workbook = xlsxwriter.Workbook('LDA_Report_' + currDateTime + '.xlsx')
+        worksheet = workbook.add_worksheet()
+
+        formatBold = workbook.add_format()
+        formatBold.set_bold()
+        formatLeft = workbook.add_format()
+        formatLeft.set_align('left')
+        formatLeftBold = workbook.add_format()
+        formatLeftBold.set_bold()
+        formatLeftBold.set_align('left')
+
+        worksheet.write(0, 0, 'Training Set Properties:', formatLeftBold)
+        worksheet.write(1, 0, trainSetProps, formatLeft)
+        worksheet.write(2, 0, 'Alpha (Reviews-Topics Probability Distribution Prior):', formatLeftBold)
+        worksheet.write(3, 0, alphaProps, formatLeft)
+        worksheet.write(4, 0, 'Eta (Terms-Topics Probability Distribution Prior):', formatLeftBold)
+        worksheet.write(5, 0, etaProps, formatLeft)
+        worksheet.write(6, 0, 'No. of Topics:', formatLeftBold)
+        worksheet.write(7, 0, noOfTopics, formatLeft)
+        worksheet.write(8, 0, 'Corpus length:', formatLeftBold)
+        worksheet.write(9, 0, len(corpus), formatLeft)
+        worksheet.write(10, 0, 'Dictionary length:', formatLeftBold)
+        worksheet.write(11, 0, len(dct), formatLeft)
+        worksheet.write(12, 0, 'Topics Terms Distribution:', formatLeftBold)
+        if trunTerms == len(dct):
+            worksheet.write(13, 0, 'It is not truncated. All topics have all words of dictionary', formatLeft)
+        else:
+            worksheet.write(13, 0, 'It is truncated for top ' + str(trunTerms) + ' terms in each topic.', formatLeft)
+
+        for s in range(noOfTopics):
+            worksheet.write(15, s * 3, 'Topic ' + str(s), formatLeftBold)
+            worksheet.write(16, s * 3, 'Word', formatLeftBold)
+            worksheet.write(16, (s * 3) + 1, 'Probability', formatLeftBold)
+            vec = lda_model.get_topic_terms(s, trunTerms)
+            for h in range(trunTerms):
+                worksheet.write(h + 18, (s * 3), dct.id2token[vec[h][0]], formatLeft)
+                worksheet.write(h + 18, (s * 3) + 1, vec[h][1], formatLeft)
+
+        worksheet2 = workbook.add_worksheet()
+        worksheet2.write(0, 0, 'Applying the model on some Benchmark Reviews:', formatLeftBold)
+        worksheet2.write(2, 0, 'Review', formatLeftBold)
+        # print(benchmarkReviews)
+        for s in range(noOfTopics):
+            worksheet2.write(2, s + 1, 'Topic ' + str(s), formatLeftBold)
+        for s in range (len(benchmarkReviews)):
+            worksheet2.write(s + 3, 0, str(benchmarkReviews[s][0]), formatLeft)
+            for o in range(noOfTopics):
+                worksheet2.write(s + 3, o + 1, benchmarkReviews[s][1][o], formatLeft)
+        workbook.close()
+
+    reportIt('Out of all reviews, those reviews were selected in which review comments were not null.',
+             'Alpha is 0.01',
+             'Eta is custom list of probabilities (90 for words appearing in Important Keywords List, and 10 for other words.',
+             50)
