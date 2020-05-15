@@ -30,17 +30,21 @@ def unique(list1):
     return unique_list
 
 def germanSpacyLemmatizer(token):
+    token = token.lower()
     lemmed = ''
     for t in nlpDe.tokenizer(token):
         lemmed = lemmed + ' ' + t.lemma_
     return lemmed.strip()
 
 def englishSpacyLemmatizer(token):
+    token = token.lower()
     lemmed = ''
     for t in nlpEn.tokenizer(token):
         lemmed = lemmed + ' ' + t.lemma_
     return lemmed.strip()
 
+keywordsOutDe = []
+keywordsOutEn = []
 for j in range(len(keywordsTable)):
     for k in range(1,len(keywordsTable[j])):
         keyword = keywordsTable[j][k]
@@ -54,20 +58,30 @@ for j in range(len(keywordsTable)):
         if itsGermanKeyword == True:
             keyword = germanSpacyLemmatizer(keyword)
             keywordsTableDe.append(keyword)
+            keywordsOutDe_temp = []
+            keywordsOutDe_temp.append(keywordsTable[j][0])
+            keywordsOutDe_temp.append(keyword)
+            keywordsOutDe.append(keywordsOutDe_temp)
         else:
             keyword = englishSpacyLemmatizer(keyword)
             keywordsTableEn.append(keyword)
+            keywordsOutEn_temp = []
+            keywordsOutEn_temp.append(keywordsTable[j][0])
+            keywordsOutEn_temp.append(keyword)
+            keywordsOutEn.append(keywordsOutEn_temp)
 
 keywordsTableEn = unique(keywordsTableEn)
 keywordsTableDe = unique(keywordsTableDe)
 csvFileNameOut = 'keywordsEn.csv'
 csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
-csv_out = csv.writer(csvFileOut, delimiter='\n')
-csv_out.writerow(keywordsTableEn) # + features)
+csv_out = csv.writer(csvFileOut, delimiter=',')
+for c in range(len(keywordsOutEn)):
+    csv_out.writerow(keywordsOutEn[c]) # + features)
 csvFileNameOut = 'keywordsDe.csv'
 csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
-csv_out = csv.writer(csvFileOut, delimiter='\n')
-csv_out.writerow(keywordsTableDe) # + features)
+csv_out = csv.writer(csvFileOut, delimiter=',')
+for c in range(len(keywordsOutDe)):
+    csv_out.writerow(keywordsOutDe[c]) # + features)
 
 print('Keywords files created.')
 

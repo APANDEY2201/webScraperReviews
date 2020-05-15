@@ -14,18 +14,21 @@ if __name__ == '__main__':
     import spacy
     import xlsxwriter
     import datetime
+    from gensim import models
 
     nlpDe = spacy.load('de_core_news_sm')
 
     nlpEn = spacy.load("en_core_web_sm")
 
     def germanSpacyLemmatizer(token):
+        token = token.lower()
         lemmed = ''
         for t in nlpDe.tokenizer(token):
             lemmed = lemmed + ' ' + t.lemma_
         return lemmed.strip()
 
     def englishSpacyLemmatizer(token):
+        token = token.lower()
         lemmed = ''
         for t in nlpEn.tokenizer(token):
             lemmed = lemmed + ' ' + t.lemma_
@@ -83,7 +86,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_de:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = germanSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN': # or germanSpacyPOS(lemmed_word) == 'ADJ' or germanSpacyPOS(lemmed_word) == 'VERB':
+                    if germanSpacyPOS(lemmed_word) == 'NOUN' or germanSpacyPOS(lemmed_word) == 'ADJ' or germanSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
@@ -95,7 +98,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_en:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = englishSpacyLemmatizer(wd)
-                    if englishSpacyPOS(lemmed_word) == 'NOUN': # or englishSpacyPOS(lemmed_word) == 'ADJ' or englishSpacyPOS(lemmed_word) == 'VERB':
+                    if englishSpacyPOS(lemmed_word) == 'NOUN' or englishSpacyPOS(lemmed_word) == 'ADJ' or englishSpacyPOS(lemmed_word) == 'VERB':
                         doc_out = doc_out + [lemmed_word]
                 else:
                     continue
@@ -109,23 +112,63 @@ if __name__ == '__main__':
 
     # Step 3: Create the Inputs of LDA model: Dictionary and Corpus
     dct = corpora.Dictionary(data_processed)
-    # print(str(len(dct)) + ' unique tokens')
     corpus = [dct.doc2bow(line) for line in data_processed]
 
     noOfTopics = 10
 
     wordProbs = []
     csvFileName1 = 'keywordsDe.csv'  # Master_Data_Milestone1_Small_for_training.csv'
-    impKeywordsDe = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
+    impKeywordsDe = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter=','))  # CSV file to 2 dimensional list of string
     impKeywordsDeFinal = [i[0] for i in impKeywordsDe]
     csvFileName1 = 'keywordsEn.csv'  # Master_Data_Milestone1_Small_for_training.csv'
-    impKeywordsEn = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
+    impKeywordsEn = list(csv.reader(open(csvFileName1, encoding='utf-8'), delimiter=','))  # CSV file to 2 dimensional list of string
     impKeywordsEnFinal = [i[0] for i in impKeywordsEn]
-    # print(impKeywordsFinal)
-    for d in range(len(dct)):
-        wordProbs.append(10)
-        if dct[d] in impKeywordsDeFinal or dct[d] in impKeywordsEnFinal:
-            wordProbs[d] = 90
+    keywordsConstruct1 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'overall' == row[0]]]
+    keywordsConstruct2 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'gender' == row[0]]]
+    keywordsConstruct3 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'age' == row[0]]]
+    keywordsConstruct4 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'cultural background' == row[0]]]
+    keywordsConstruct5 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'sexual orientation' == row[0]]]
+    keywordsConstruct6 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'handicap' == row[0]]]
+    keywordsConstructAll = keywordsConstruct1+keywordsConstruct2+keywordsConstruct3+keywordsConstruct4+keywordsConstruct5+keywordsConstruct6
+    keywordsConstructAllIDs = []
+    for token, id in dct.token2id.items():
+        if token in keywordsConstructAll:
+            keywordsConstructAllIDs.append(id)
+    print('keywords in dictionary are : ' + str(len(keywordsConstructAllIDs)))
+    # print(keywordsConstructAllIDs)
+    tfidf = models.TfidfModel(corpus, id2word=dct)
+    low_value = 0.6
+    low_value_words = []
+    for bow in corpus:
+        low_value_words += [id for id, value in tfidf[bow] if value < low_value]
+    # print(low_value_words)
+    dct.filter_tokens(bad_ids=list(set(low_value_words) - set(keywordsConstructAllIDs)))
+    corpus = [dct.doc2bow(line) for line in data_processed]
+
+    # print(keywordsConstruct5)
+    for t in range(noOfTopics):
+        wordProbs_temp = []
+        for d in range(len(dct)):
+            wordProbs_temp.append(10)
+            if t == 0:
+                if dct[d] in keywordsConstruct1:
+                    wordProbs_temp[d] = 90
+            if t == 1:
+                if dct[d] in keywordsConstruct2:
+                    wordProbs_temp[d] = 90
+            if t == 2:
+                if dct[d] in keywordsConstruct3:
+                    wordProbs_temp[d] = 90
+            if t == 3:
+                if dct[d] in keywordsConstruct4:
+                    wordProbs_temp[d] = 90
+            if t == 4:
+                if dct[d] in keywordsConstruct5:
+                    wordProbs_temp[d] = 90
+            if t == 5:
+                if dct[d] in keywordsConstruct6:
+                    wordProbs_temp[d] = 90
+        wordProbs.append(wordProbs_temp)
 
     # Step 4: Train the LDA model
     lda_model = LdaMulticore(corpus=corpus,
@@ -247,6 +290,9 @@ if __name__ == '__main__':
 
         formatBold = workbook.add_format()
         formatBold.set_bold()
+        formatRedLeft = workbook.add_format()
+        formatRedLeft.set_font_color('red')
+        formatRedLeft.set_align('left')
         formatLeft = workbook.add_format()
         formatLeft.set_align('left')
         formatLeftBold = workbook.add_format()
@@ -277,8 +323,11 @@ if __name__ == '__main__':
             worksheet.write(16, (s * 3) + 1, 'Probability', formatLeftBold)
             vec = lda_model.get_topic_terms(s, trunTerms)
             for h in range(trunTerms):
-                worksheet.write(h + 18, (s * 3), dct.id2token[vec[h][0]], formatLeft)
-                worksheet.write(h + 18, (s * 3) + 1, vec[h][1], formatLeft)
+                if dct.id2token[vec[h][0]] in keywordsConstructAll:
+                    worksheet.write(h + 17, (s * 3), dct.id2token[vec[h][0]], formatRedLeft)
+                else:
+                    worksheet.write(h + 17, (s * 3), dct.id2token[vec[h][0]], formatLeft)
+                worksheet.write(h + 17, (s * 3) + 1, vec[h][1], formatLeft)
 
         worksheet2 = workbook.add_worksheet()
         worksheet2.write(0, 0, 'Applying the model on some Benchmark Reviews:', formatLeftBold)
@@ -295,4 +344,4 @@ if __name__ == '__main__':
     reportIt('Out of all reviews, those reviews were selected in which review comments were not null.',
              'Alpha is 0.01',
              'Eta is custom list of probabilities (90 for words appearing in Important Keywords List, and 10 for other words.',
-             50)
+             len(dct))
