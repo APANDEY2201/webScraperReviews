@@ -18,16 +18,19 @@ if __name__ == '__main__':
     import shutil
     import os
 
-    setTfIDFThreshold = 0.2
-    setImpKeywords = True
-    setNoun = True
-    setAdj = False
-    setVerb = False
-    setNoOfTopics = 10
+    setKeepNounInCorp = True
+    setKeepAdjInCorp = True
+    setKeepVerbInCorp = False
+    setTfIDFThreshold = 0.6
+    setRemoveImpKeywordsFromHitlist = True
+    setRemoveNounFromHitlist = False
+    setRemoveAdjFromHitlist = False
+    setRemoveVerbFromHitlist = False
+    setNoOfTopics = 200
     setAlpha = 0.01
     setEta = 0.0001
     setFitBundle = False
-    setTempRun = '_temp'
+    setTempRun = ''
 
     nlpDe = spacy.load('de_core_news_sm')
 
@@ -52,7 +55,7 @@ if __name__ == '__main__':
     def englishSpacyPOS(token):
         return nlpEn(token)[0].pos_
 
-    # print(germanSpacyPOS('gehen'))
+    # print(germanSpacyPOS('teuer'))
     # print(englishSpacyPOS('language'))
 
     # print(englishSpacyLemmatizer('going'))
@@ -104,13 +107,13 @@ if __name__ == '__main__':
                 if wd not in stop_words_de:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = germanSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN':
+                    if germanSpacyPOS(lemmed_word) == 'NOUN' and setKeepNounInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listNoun.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'ADJ':
+                    if germanSpacyPOS(lemmed_word) == 'ADJ' and setKeepAdjInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listAdj.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'VERB':
+                    if germanSpacyPOS(lemmed_word) == 'VERB' and setKeepVerbInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listVerb.append(lemmed_word)
                 else:
@@ -123,13 +126,13 @@ if __name__ == '__main__':
                 if wd not in stop_words_en:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = englishSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN':
+                    if germanSpacyPOS(lemmed_word) == 'NOUN' and setKeepNounInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listNoun.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'ADJ':
+                    if germanSpacyPOS(lemmed_word) == 'ADJ' and setKeepAdjInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listAdj.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'VERB':
+                    if germanSpacyPOS(lemmed_word) == 'VERB' and setKeepVerbInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listVerb.append(lemmed_word)
                 else:
@@ -186,7 +189,7 @@ if __name__ == '__main__':
         low_value_words += [id for id, value in tfidf[bow] if value < tfidf_threshold]
 
     dctOpsLog = []
-    dctOpsLog.append('Dictionary contains ' + str(len(dct)) + ' terms before filtering out bad terms.')
+    dctOpsLog.append('Dictionary contains ' + str(len(dct)) + ' terms (Nouns: ' + str(len(listNounIds)) + ' / Adjs: ' + str(len(listAdjIds)) + ' / Verbs: ' + str(len(listVerbIds)) + ' / ImpKeywords: ' + str(len(keywordsConstructAllIDsInDct)) + ') before filtering out bad terms.')
     print(dctOpsLog[-1])
     dctOpsLog.append('Making Hit List of terms to filter out from dictionary...')
     print(dctOpsLog[-1])
@@ -198,28 +201,28 @@ if __name__ == '__main__':
     dctOpsLog.append('HitList: Size is ' + str(len(hitList)))
     print(dctOpsLog[-1])
 
-    if setImpKeywords == True:
+    if setRemoveImpKeywordsFromHitlist == True:
         dctOpsLog.append('HitList: Removing ' +  str(len(keywordsConstructAllIDsInDct)) +' Important Keywords (which are there in dictionary) from HitList (Remove if occurs).')
         print(dctOpsLog[-1])
         hitList = hitList - set(keywordsConstructAllIDsInDct)
         dctOpsLog.append('HitList: Size is ' + str(len(hitList)))
         print(dctOpsLog[-1])
 
-    if setNoun == True:
+    if setRemoveNounFromHitlist == True:
         dctOpsLog.append('HitList: Removing ' + str(len(listNounIds)) + ' Nouns (which are there in dictionary) from HitList (Remove if occurs).')
         print(dctOpsLog[-1])
         hitList = hitList - set(listNounIds)
         dctOpsLog.append('HitList: Size is ' + str(len(hitList)))
         print(dctOpsLog[-1])
 
-    if setAdj == True:
+    if setRemoveAdjFromHitlist == True:
         dctOpsLog.append('HitList: Removing ' + str(len(listAdjIds)) + ' Adjectives (which are there in dictionary) from HitList (Remove if occurs).')
         print(dctOpsLog[-1])
         hitList = hitList - set(listAdjIds)
         dctOpsLog.append('HitList: Size is ' + str(len(hitList)))
         print(dctOpsLog[-1])
 
-    if setVerb == True:
+    if setRemoveVerbFromHitlist == True:
         dctOpsLog.append('HitList: Removing ' + str(len(listVerbIds)) + ' Verbs (which are there in dictionary) from HitList (Remove if occurs).')
         print(dctOpsLog[-1])
         hitList = hitList - set(listVerbIds)
@@ -229,7 +232,21 @@ if __name__ == '__main__':
     dctOpsLog.append('Applying HitList filter on dictionary...')
     print(dctOpsLog[-1])
     dct.filter_tokens(bad_ids=list(hitList))
-    dctOpsLog.append('Dictionary contains ' + str(len(dct)) + ' terms after filtering out bad terms.')
+    finalNosImpKeywords = 0
+    finalNosNouns = 0
+    finalNosAdjs = 0
+    finalNosVerbs = 0
+    posDistOut = ''
+    for token, id in dct.token2id.items():
+        if token in keywordsConstructAll:
+            finalNosImpKeywords = finalNosImpKeywords + 1
+        if token in listNoun:
+            finalNosNouns = finalNosNouns + 1
+        if token in listAdj:
+            finalNosAdjs = finalNosAdjs + 1
+        if token in listVerb:
+            finalNosVerbs = finalNosVerbs + 1
+    dctOpsLog.append('Dictionary contains ' + str(len(dct)) + ' terms (Nouns: ' + str(finalNosNouns) + ' / Adjs: ' + str(finalNosAdjs) + ' / Verbs: ' + str(finalNosVerbs) + ' / ImpKeywords: ' + str(finalNosImpKeywords) + ') after filtering out bad terms.')
     print(dctOpsLog[-1])
 
     corpus = [dct.doc2bow(line) for line in data_processed]
@@ -314,7 +331,7 @@ if __name__ == '__main__':
     loopStep = 1
     if setFitBundle == True:
         loopStep = 10
-    for j in range(1, len(masterDataBig),1):
+    for j in range(1, len(masterDataBig),loopStep):
         doc = masterDataBig[j][9].strip()
         if setFitBundle == True:
             doc = ''
