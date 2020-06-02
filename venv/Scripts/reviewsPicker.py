@@ -144,6 +144,22 @@ for i in range(1,len(masterData)):
     if i%100 == 0:
         print(str(i) + " reviews processed.")
 
+# for i in range(1,len(masterData),10):
+#     review = masterData[i][9].strip()
+#     bigReview = ''
+#     for j in range(i,i+10):
+#         bigReview = bigReview + ' ' + masterData[j][9].strip()
+#     masterData[i][9] = bigReview
+#     if (len(bigReview) > 500 and detect(bigReview) == 'en'):
+#         csv_out.writerow(masterData[i])
+#     # if ((masterData[i][7] == 'Gleichberechtigung' or masterData[i][7] ==  'Umgang mit älteren Kollegen') and review != '') or reviewHit(review) == True:
+#     #     csv_out.writerow(masterData[i])
+#     # if reviewHit(review) == True:
+#     #     csv_out.writerow(masterData[i])
+#
+#     if i%100 == 0:
+#         print(str(i) + " reviews processed.")
+
 csvFileNameOut = 'pickedReviews.csv'
 csvFileOut = open(csvFileNameOut, "w", newline='', encoding='utf-8')
 csv_out = csv.writer(csvFileOut, delimiter='|')

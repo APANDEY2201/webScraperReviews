@@ -17,20 +17,21 @@ if __name__ == '__main__':
     from gensim import models
     import shutil
     import os
+    import pandas as pd
 
     setKeepNounInCorp = True
     setKeepAdjInCorp = True
     setKeepVerbInCorp = False
-    setTfIDFThreshold = 0.6
+    setTfIDFThreshold = 0
     setRemoveImpKeywordsFromHitlist = True
-    setRemoveNounFromHitlist = False
-    setRemoveAdjFromHitlist = False
-    setRemoveVerbFromHitlist = False
-    setNoOfTopics = 200
-    setAlpha = 0.01
-    setEta = 0.0001
+    setRemoveNounFromHitlist = True
+    setRemoveAdjFromHitlist = True
+    setRemoveVerbFromHitlist = True
+    setNoOfTopics = 50
+    setAlpha = 0.1
+    setEta = 0.2
     setFitBundle = False
-    setTempRun = ''
+    setTempRun = '_engsample' #change benchmark review size also
 
     nlpDe = spacy.load('de_core_news_sm')
 
@@ -55,10 +56,18 @@ if __name__ == '__main__':
     def englishSpacyPOS(token):
         return nlpEn(token)[0].pos_
 
-    # print(germanSpacyPOS('teuer'))
+    def fetchDescAnalysisWords():
+        csvFileName3 = 'Usage of words - RDT Inventory.csv'  # Master_Data_Milestone1_Small_for_training.csv'
+        descFile = list(csv.reader(open(csvFileName3, encoding='Latin-1'), delimiter=','))  # CSV file to 2 dimensional list of string
+        # descFile = pd.read_csv("Usage of words - RDT Inventory.csv", sep=",", encoding='Latin-1')
+        # descFile2 = descFile.values.tolist()
+        return descFile
+
+
+    # print(germanSpacyPOS('apple'))
     # print(englishSpacyPOS('language'))
 
-    # print(englishSpacyLemmatizer('going'))
+    # print(englishSpacyLemmatizer('discovery'))
     # print(germanSpacyLemmatizer('gehst'))
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s')
@@ -74,6 +83,18 @@ if __name__ == '__main__':
 
     # Step 1: Import the dataset and get the text and real topic of each news article
     # dataset = [['Although', 'our'], ['conceptual', 'arguments', 'are']]
+
+    descAnalysis = fetchDescAnalysisWords()
+    for o in range(len(descAnalysis)):
+        wd = descAnalysis[o][0].lower()
+        lemmed_word = englishSpacyLemmatizer(wd)
+        if lemmed_word:
+            descAnalysis[o][0]=lemmed_word
+        wd = descAnalysis[o][2].lower()
+        lemmed_word = germanSpacyLemmatizer(wd)
+        if lemmed_word:
+            descAnalysis[o][2] = lemmed_word
+    print(descAnalysis)
 
     data_processed = []
 
@@ -107,7 +128,7 @@ if __name__ == '__main__':
                 if wd not in stop_words_de:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = germanSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN' and setKeepNounInCorp == True:
+                    if (germanSpacyPOS(lemmed_word) == 'NOUN' or germanSpacyPOS(lemmed_word) == 'PROPN') and setKeepNounInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listNoun.append(lemmed_word)
                     if germanSpacyPOS(lemmed_word) == 'ADJ' and setKeepAdjInCorp == True:
@@ -126,18 +147,17 @@ if __name__ == '__main__':
                 if wd not in stop_words_en:  # remove stopwords
                     # stemmed_word = stemmerDe.stem(wd).lower()  # stemming
                     lemmed_word = englishSpacyLemmatizer(wd)
-                    if germanSpacyPOS(lemmed_word) == 'NOUN' and setKeepNounInCorp == True:
+                    if (englishSpacyPOS(lemmed_word) == 'NOUN' or englishSpacyPOS(lemmed_word) == 'PROPN') and setKeepNounInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listNoun.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'ADJ' and setKeepAdjInCorp == True:
+                    if englishSpacyPOS(lemmed_word) == 'ADJ' and setKeepAdjInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listAdj.append(lemmed_word)
-                    if germanSpacyPOS(lemmed_word) == 'VERB' and setKeepVerbInCorp == True:
+                    if englishSpacyPOS(lemmed_word) == 'VERB' and setKeepVerbInCorp == True:
                         doc_out = doc_out + [lemmed_word]
                         listVerb.append(lemmed_word)
                 else:
                     continue
-
 
         data_processed.append(doc_out)
 
@@ -152,6 +172,7 @@ if __name__ == '__main__':
     # Step 3: Create the Inputs of LDA model: Dictionary and Corpus
     dct = corpora.Dictionary(data_processed)
     corpus = [dct.doc2bow(line) for line in data_processed]
+    # print(corpus)
     noOfTopics = setNoOfTopics
 
     wordProbs = []
@@ -169,6 +190,7 @@ if __name__ == '__main__':
     keywordsConstruct6 = [row[1] for row in [row for row in impKeywordsDe+impKeywordsEn if 'handicap' == row[0]]]
     keywordsConstructAll = keywordsConstruct1+keywordsConstruct2+keywordsConstruct3+keywordsConstruct4+keywordsConstruct5+keywordsConstruct6
     keywordsConstructAllIDsInDct = []
+
     for token, id in dct.token2id.items():
         # print(str(token) + ' ::: ' + str(id))
         if token in keywordsConstructAll:
@@ -288,15 +310,15 @@ if __name__ == '__main__':
                              id2word=dct,
                              random_state=100,
                              num_topics=noOfTopics,
-                             passes=10,
+                             passes=2, #2,
                              chunksize=1000,
                              # batch=False,
                              alpha = setAlpha, #alpha='asymmetric', # alpha=1/2, #alpha=[0.5,0.5], #greater than 1 gives docs all topics alomost equal prob
                              decay=0.5,
-                             offset=64,
+                             offset=1.5, #64,
                              eta = setEta, #wordProbs, #eta=None, # eta=1/370,
                              eval_every=0,
-                             iterations=100,
+                             iterations=2,
                              gamma_threshold=0.001,
                              per_word_topics=True)
 
@@ -309,14 +331,14 @@ if __name__ == '__main__':
     # print(lda_model.get_topic_terms(1,370))
     # print(lda_model.get_term_topics(102,1))
 
-    topicTermsFile = open('TopicTermsData.txt', 'w', encoding='utf-8')
-    for s in range(noOfTopics):
-        vec = lda_model.get_topic_terms(s,10)#len(dct))
-        toPrint = 'Topic no.: ' + str(s) + ' | '
-        for h in range(10):#len(dct)):
-           toPrint = toPrint + dct.id2token[vec[h][0]] + ' : ' + str(vec[h][1]) + ' | '
-        # print(toPrint)
-        topicTermsFile.writelines(toPrint + '\n')
+    # topicTermsFile = open('TopicTermsData.txt', 'w', encoding='utf-8')
+    # for s in range(noOfTopics):
+    #     vec = lda_model.get_topic_terms(s,10)#len(dct))
+    #     toPrint = 'Topic no.: ' + str(s) + ' | '
+    #     for h in range(10):#len(dct)):
+    #        toPrint = toPrint + dct.id2token[vec[h][0]] + ' : ' + str(vec[h][1]) + ' | '
+    #     # print(toPrint)
+    #     topicTermsFile.writelines(toPrint + '\n')
 
     csvFileName2 = 'Master_Data_Milestone1' + setTempRun + '.csv' #Master_Data_Milestone1_Big_for_fitting.csv'
     masterDataBig = list(csv.reader(open(csvFileName2, encoding='utf-8'), delimiter='|'))  # CSV file to 2 dimensional list of string
@@ -338,6 +360,10 @@ if __name__ == '__main__':
             for k in range(j, j + 10):
                 doc = doc + ' ' + masterDataBig[k][9].strip()
             masterDataBig[j][9] = doc
+
+        for p in range(len(descAnalysis)):
+            if (descAnalysis[p][0] in doc or descAnalysis[p][2] in doc):
+                descAnalysis[p][3] = str(int(descAnalysis[p][3]) + 1)
 
         if len(doc) > 5:
 
@@ -379,7 +405,8 @@ if __name__ == '__main__':
                         continue
 
             corpus2 = [dct.doc2bow(doc_out)]
-            # print(corpus2)
+            print('============ corpus 2 =========')
+            print(corpus2)
             # word_counts = [[(dct[id], count) for id, count in line] for line in corpus2]
             # print(word_counts)
             vector = lda_model[corpus2[0]]  # get topic probability distribution for a document
@@ -396,7 +423,7 @@ if __name__ == '__main__':
                         finalVector_temp[1] = vector2[l][1]
                 finalVector.append(finalVector_temp)
             csv_out.writerow(masterDataBig[j] + [row[1] for row in finalVector])
-            if len(masterDataBig[j][9].strip()) > 50:
+            if len(masterDataBig[j][9].strip()) > 1:
                 benchmarkReviewsTemp = []
                 benchmarkReviewsTemp.append(masterDataBig[j][7].strip())
                 benchmarkReviewsTemp.append(masterDataBig[j][8].strip())
@@ -405,6 +432,8 @@ if __name__ == '__main__':
                 benchmarkReviews.append(benchmarkReviewsTemp)
         if j % 100 == 0:
             print(str(j) + " reviews processed.")
+
+    print(descAnalysis)
 
     def reportIt(trainSetProps='', alphaProps='', etaProps='', trunTerms=len(dct)):
         # newpath = r'C:\Program Files\arbitrary'

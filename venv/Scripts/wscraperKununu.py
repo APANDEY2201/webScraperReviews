@@ -67,7 +67,7 @@ OrgTotalKununuReviews= ''
 OrgRecomPercent= ''
 OrgProfileViews= ''
 
-masterDataFileName = 'Master_Data_Milestone1.csv'
+masterDataFileName = 'Master_Data_Milestone1_test.csv'
 masterDataFile = open(masterDataFileName, "w", newline='',encoding='utf-8')
 csv_out = csv.writer(masterDataFile, delimiter = '|')
 csv_out.writerows([("Org","OrgSector","RverMonthYear","RverReviewer","RverPosition","RverLoc","RverRecom","RvReviewAbout","RvScore","RvComment")])
