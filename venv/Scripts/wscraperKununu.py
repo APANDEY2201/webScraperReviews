@@ -54,10 +54,38 @@ def orgSector(org):
         return 'Finanz'
 
 # Step 1: To get the source code of page.
-rev_pages=500
+rev_pages=1000
 count_final=0
 
-rev_org_dict={'adidas ag':'adidas','Allianz SE':'allianz-deutschland','BASF SE':'basf-se','Bayerische Motoren Werke AG':'bayerische-motoren-werke','Beiersdorf Aktiengesellschaft':'beiersdorf','Deutsche Bank AG':'deutsche-bank','Deutsche Lufthansa AG':'deutsche-lufthansa','Deutsche Post AG':'deusche-post','SAP SE':'sap','Wirecard AG':'wirecard'}
+
+# 03-06-2020
+# get type of industry from csv file
+# get url and company name from csv file
+# replace '  ' with ''
+# count should be correct
+
+# open and fetch csv
+companyListFile = '200429_Companies_List_for_Python.csv'
+#companyListFile='C:\\Users\\tabis\\PycharmProjects\\webScraperReviews\\venv\\Scripts\\200429_Companies_List_for_Python.csv'
+companyName = ''
+companyUrl = ''
+companyType = ''
+rev_org_dict = {}
+rev_org_type_dict = {}
+with open(companyListFile, encoding='utf-8') as companyDataFile:
+    print('File opened')
+    data = csv.reader(companyDataFile, delimiter=',')
+    #print('After data')
+    for row in data:
+        companyName = row[1]
+        companyUrl = row[3]
+        companyType = row[4]
+#        print(companyName, companyUrl, companyType)
+        rev_org_dict.update({companyName: companyUrl})
+        rev_org_type_dict.update({companyName: companyType})
+
+
+#rev_org_dict={'adidas ag':'adidas','Allianz SE':'allianz-deutschland','BASF SE':'basf-se','Bayerische Motoren Werke AG':'bayerische-motoren-werke','Beiersdorf Aktiengesellschaft':'beiersdorf','Deutsche Bank AG':'deutsche-bank','Deutsche Lufthansa AG':'deutsche-lufthansa','Deutsche Post AG':'deusche-post','SAP SE':'sap','Wirecard AG':'wirecard'}
 # rev_org_dict={'SAP SE':'sap','Wirecard AG':'wirecard'}
 rev_org_domain=''
 OrgSales= ''
