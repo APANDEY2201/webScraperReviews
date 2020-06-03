@@ -95,7 +95,10 @@ for Org, org_url_alias in rev_org_dict.items():
     print('Fetching Reviews of', Org, ',Please wait...')
     OrgSector = rev_org_type_dict[Org]
     url_org_home=base_url+org_url_alias
-    page_org_home=urlopen(url_org_home)
+    try:
+        page_org_home=urlopen(url_org_home)
+    except:
+        continue
     html_org_home=page_org_home.read()
     page_org_home.close()
     parsed_html_org=bsoup(html_org_home,"html.parser")
