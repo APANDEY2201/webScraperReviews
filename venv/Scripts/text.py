@@ -24,3 +24,8 @@ for Org, org_url_alias in rev_org_dict.items():
     print('Fetching Reviews of', Org, ',Please wait...', org_url_alias)
 for Org, reg_type in rev_org_type_dict.items():
     print('Fetching Reviews of', Org, ',Please wait...', reg_type)
+
+
+print('--------------------------------')
+org_type=rev_org_type_dict[companyName]
+print(org_type)
